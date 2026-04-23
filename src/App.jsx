@@ -1276,7 +1276,10 @@ export default function App() {
             );
           })}
         </nav>
-        <div className="px-3 py-3" style={{borderTop: "1px solid rgba(255,255,255,0.06)"}}>
+        <div className="px-3 py-3 space-y-0.5" style={{borderTop: "1px solid rgba(255,255,255,0.06)"}}>
+          <button onClick={() => handleNavClick("guide")} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-all duration-200" style={{borderRadius: MORPHY.radius.md, background: screen === "guide" ? "rgba(255,255,255,0.1)" : "transparent", color: screen === "guide" ? "#fff" : "rgba(255,255,255,0.45)", fontWeight: 400}}>
+            <BookOpen size={18}/><span>利用ガイド</span>
+          </button>
           <button onClick={() => handleNavClick("about")} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-all duration-200" style={{borderRadius: MORPHY.radius.md, background: screen === "about" ? "rgba(255,255,255,0.1)" : "transparent", color: screen === "about" ? "#fff" : "rgba(255,255,255,0.45)", fontWeight: 400}}>
             <Sparkles size={18}/><span>本サービスについて</span>
           </button>
@@ -8383,6 +8386,169 @@ export default function App() {
   };
 
   // ============================================================
+  // GUIDE SCREEN — 利用ガイド
+  // ============================================================
+  const GuideScreen = () => {
+    const [activeRole, setActiveRole] = useState(role === "candidate" ? "staff" : role === "customer" ? "client" : role);
+    const roles = [
+      { id: "admin", label: "管理者", color: MORPHY.plumBlack, icon: <Settings size={14} className="text-white"/> },
+      { id: "sales", label: "営業", color: MORPHY.red, icon: <Briefcase size={14} className="text-white"/> },
+      { id: "client", label: "派遣先企業", color: "#7C3AED", icon: <Building2 size={14} className="text-white"/> },
+      { id: "staff", label: "スタッフ", color: "#15803D", icon: <User size={14} className="text-white"/> },
+    ];
+
+    const Step = ({ num, title, desc, tips }) => (
+      <div className="flex gap-4 mb-6">
+        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold" style={{background: roles.find(r => r.id === activeRole)?.color || MORPHY.red, marginTop: 2}}>{num}</div>
+        <div className="flex-1">
+          <h4 className="text-sm font-bold text-[#211922] mb-1">{title}</h4>
+          <p className="text-xs text-[#62625b] mb-2" style={{lineHeight: 1.8}}>{desc}</p>
+          {tips && <div className="p-3 rounded-lg text-xs" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}><span className="font-semibold text-[#211922]">ヒント: </span><span className="text-[#91918c]">{tips}</span></div>}
+        </div>
+      </div>
+    );
+
+    const Section = ({ title, icon, children }) => (
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-4 pb-2" style={{borderBottom: `2px solid ${roles.find(r => r.id === activeRole)?.color || MORPHY.red}`}}>
+          {icon}
+          <h3 className="text-base font-bold text-[#211922]">{title}</h3>
+        </div>
+        {children}
+      </div>
+    );
+
+    const guideContent = {
+      admin: (
+        <div>
+          <Section title="ダッシュボード" icon={<Home size={16} style={{color: MORPHY.plumBlack}}/>}>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>ログイン後に表示されるトップ画面です。全スタッフ数、育成計画の進捗、就業率などのKPIを一覧できます。</p>
+            <Step num="1" title="KPIカードで全体把握" desc="全スタッフ数・育成計画数・育成中人数・就業率の4つの指標をリアルタイムで確認。カードをクリックすると各詳細画面に遷移します。"/>
+            <Step num="2" title="育成計画の進捗確認" desc="各計画の目標人数に対する充足率をプログレスバーで確認できます。遅れている計画は赤色で表示されます。"/>
+            <Step num="3" title="職種別・スキル別の分布確認" desc="認定スタッフ数を職種別・スキル別に横棒グラフで可視化。人材の偏りや不足を把握できます。"/>
+          </Section>
+
+          <Section title="育成計画の管理" icon={<Target size={16} style={{color: MORPHY.plumBlack}}/>}>
+            <Step num="1" title="計画を作成する" desc="「育成計画」→「新規作成」から、目標職種・必要人数・期限・必要スキルを設定します。AIがスキルセットの提案もサポートします。"/>
+            <Step num="2" title="育成メンバーを追加する" desc="計画詳細画面の「育成要員を追加」ボタンから専用画面に遷移。スキルマッチ率で候補者が自動ランキングされ、チェックボックスで一括追加できます。"/>
+            <Step num="3" title="進捗をモニタリングする" desc="計画詳細画面で各メンバーの研修進捗・マッチ率を確認。「提案可能」「育成中」のステータスでフィルタリングできます。" tips="右サイドバーの「達成状況」で目標に対する充足率を常に把握できます。"/>
+          </Section>
+
+          <Section title="マスタ管理" icon={<Layers size={16} style={{color: MORPHY.plumBlack}}/>}>
+            <Step num="1" title="職種マスタ" desc="「職種マスタ」で職種カテゴリを管理。各職種に必要なスキル・アセスメント基準を設定します。AIチャットで新しい職種の要件を対話的に設計することもできます。"/>
+            <Step num="2" title="スキルマスタ" desc="「スキルマスタ」で認定スキルを管理。各スキルに前提研修を紐づけることで、研修完了→アセスメント開放の自動フローが構築されます。"/>
+            <Step num="3" title="研修マスタ" desc="「研修マスタ」で研修プログラムを管理。社内研修・外部資格講座・eラーニングを一元管理し、スケジュール・定員・コストを設定します。"/>
+          </Section>
+        </div>
+      ),
+
+      sales: (
+        <div>
+          <Section title="ダッシュボード" icon={<Home size={16} style={{color: MORPHY.red}}/>}>
+            <Step num="1" title="アクティビティ一覧" desc="未対応の面談リクエスト・顧客が作成した募集・契約終了間近のスタッフが一目で分かります。赤いカードは緊急対応が必要な項目です。"/>
+            <Step num="2" title="募集一覧へのアクセス" desc="「募集一覧」から全ての募集を確認。ステータスフィルタで「対応中」「未対応リクエストあり」などで絞り込めます。"/>
+          </Section>
+
+          <Section title="募集への候補者提案" icon={<List size={16} style={{color: MORPHY.red}}/>}>
+            <Step num="1" title="募集詳細を開く" desc="募集一覧から対象の募集をクリックして詳細画面を開きます。要件スキル・勤務条件・顧客情報が確認できます。"/>
+            <Step num="2" title="候補者を提案する" desc="「候補者タブ」で提案済み・顧客追加の候補者を管理。推薦コメントを入力して顧客にアピールできます。" tips="スキルマッチ率が自動計算されるので、高い候補者から順に提案すると効率的です。"/>
+            <Step num="3" title="アセスメント受験を依頼する" desc="候補者行の「アセスメント依頼」ボタンから期限を設定して依頼を送信。スタッフのダッシュボードとTodoリストに通知されます。" tips="「3日後」「7日後」「14日後」のクイック選択ボタンで素早く期限を設定できます。"/>
+          </Section>
+
+          <Section title="面談リクエスト対応" icon={<MessageSquare size={16} style={{color: MORPHY.red}}/>}>
+            <Step num="1" title="リクエストを確認する" desc="ダッシュボードの「未対応の面談リクエスト」カード、または募集詳細画面の面談リクエスト欄から確認します。"/>
+            <Step num="2" title="回答メールを送信する" desc="「回答メールを送信」ボタンでメール作成画面が開きます。候補者情報が自動で入力され、レジュメも添付可能です。"/>
+          </Section>
+
+          <Section title="スタッフ就業状況" icon={<Monitor size={16} style={{color: MORPHY.red}}/>}>
+            <Step num="1" title="就業状況の確認" desc="「スタッフ就業状況」で全スタッフの配属先・契約期間を一覧表示。契約終了が近いスタッフは色付きバッジで警告されます。"/>
+          </Section>
+        </div>
+      ),
+
+      client: (
+        <div>
+          <Section title="募集要件の作成" icon={<FileText size={16} style={{color: "#7C3AED"}}/>}>
+            <Step num="1" title="AIチャットで要件を整理" desc="トップ画面でAIチャットと対話しながら募集要件を作成します。「経理経験3年以上」「Excel上級」のように希望を伝えると、AIが最適なスキル要件を提案します。"/>
+            <Step num="2" title="候補者プレビュー" desc="要件を入力するとリアルタイムで該当候補者が表示されます。個人情報はマスキングされた状態（ブラインド）で、スキル・経験のみ確認できます。" tips="候補者のスキルタグが緑色の場合、要件にマッチしていることを示しています。"/>
+            <Step num="3" title="募集を保存する" desc="要件が固まったら「この内容で保存」ボタンで募集を保存。営業担当に自動通知されます。"/>
+          </Section>
+
+          <Section title="候補者の閲覧・検索" icon={<Search size={16} style={{color: "#7C3AED"}}/>}>
+            <Step num="1" title="スタッフ検索" desc="「スタッフ検索」タブでスキル・経験年数・勤務地等の条件でスタッフを検索できます。ブラインドモードで表示されるため、スキルと経験に集中して評価できます。"/>
+            <Step num="2" title="お気に入り登録" desc="気になる候補者はハートアイコンでお気に入りに保存。「お気に入り一覧」でまとめて確認できます。"/>
+          </Section>
+
+          <Section title="面談リクエスト" icon={<MessageSquare size={16} style={{color: "#7C3AED"}}/>}>
+            <Step num="1" title="面談をリクエストする" desc="候補者カードまたは詳細画面から「面談リクエスト」ボタンを押すと、営業担当にリクエストが送信されます。"/>
+            <Step num="2" title="フィードバックを提供する" desc="面談後、営業から共有された候補者に対してフィードバック（採用希望・見送り・保留）を送ることができます。"/>
+          </Section>
+        </div>
+      ),
+
+      staff: (
+        <div>
+          <Section title="マイページ（ダッシュボード）" icon={<Home size={16} style={{color: "#15803D"}}/>}>
+            <Step num="1" title="やることリストを確認" desc="ログイン後、最初に表示されるのがマイページです。「やることリスト」に研修の確認テスト・アセスメント受験・受講中の研修が優先度順に表示されます。" tips="赤色の項目は期限が近い、または緊急の対応が必要なタスクです。"/>
+            <Step num="2" title="KPIカードで状況把握" desc="「アセスメント」「研修」「通知」の3つのカードで、受験可能なアセスメント数・研修の進捗・新着通知を一目で確認できます。"/>
+            <Step num="3" title="スキル・資格の確認" desc="認定職種・認定スキル・保有スキルがカードにまとめて表示されます。アセスメントに合格するとここに自動反映されます。"/>
+          </Section>
+
+          <Section title="研修の受講" icon={<BookOpen size={16} style={{color: "#15803D"}}/>}>
+            <Step num="1" title="研修一覧を確認" desc="「研修一覧」タブで割り当てられた研修の一覧を確認。「受講中」「確認テスト待ち」「未着手」「完了」のステータスで分類されています。"/>
+            <Step num="2" title="研修を進める" desc="受講中の研修はスライダーで進捗を更新できます。進捗が100%になると「確認テスト待ち」に自動移行します。"/>
+            <Step num="3" title="習得確認テストを受験する" desc="「確認テスト待ち」の研修に表示される「テストを受験」ボタンからオンラインテストを受験。3問出題され、70%以上で合格です。" tips="不合格の場合は何度でも再受験できます。合格すると研修が「完了」になります。"/>
+          </Section>
+
+          <Section title="アセスメントの受験" icon={<Award size={16} style={{color: "#15803D"}}/>}>
+            <Step num="1" title="受験可能なアセスメントを確認" desc="「アセスメント」タブで受験可能なスキルアセスメントを確認。前提研修を全て完了すると自動的に「受験可能」になります。" tips="「前提未達」のアセスメントには、完了すべき研修名が表示されています。"/>
+            <Step num="2" title="アセスメントを受験する" desc="「受験する」ボタンからオンラインアセスメントを開始。設問に回答し、合格スコア以上で認定を取得できます。"/>
+            <Step num="3" title="スキル認定を取得" desc="合格するとスキル認定が自動的にプロフィールに反映され、該当スキルを要件とする案件への提案候補に加わります。"/>
+          </Section>
+
+          <Section title="プロフィール管理" icon={<User size={16} style={{color: "#15803D"}}/>}>
+            <Step num="1" title="プロフィールを編集する" desc="マイページのプロフィール欄をクリックするとプロフィール画面に遷移。「編集する」ボタンで各項目を更新できます。" tips="スキルレベルの変更、資格の追加、希望条件の更新はここから行えます。"/>
+          </Section>
+        </div>
+      ),
+    };
+
+    return (
+      <div>
+        <PageHeader title="利用ガイド" subtitle="TalentFlowの使い方"/>
+
+        {/* Role tabs */}
+        <div className="flex gap-2 mb-6 p-1 rounded-xl" style={{background: MORPHY.warmWash}}>
+          {roles.map(r => (
+            <button key={r.id} onClick={() => setActiveRole(r.id)} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all" style={{background: activeRole === r.id ? "#fff" : "transparent", color: activeRole === r.id ? "#211922" : "#91918c", boxShadow: activeRole === r.id ? MORPHY.shadow.float : "none"}}>
+              <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{background: activeRole === r.id ? r.color : "transparent"}}>{activeRole === r.id ? r.icon : React.cloneElement(r.icon, { className: "text-[#91918c]" })}</div>
+              {r.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Role header */}
+        <div className="flex items-center gap-3 p-4 rounded-xl mb-6" style={{background: roles.find(r => r.id === activeRole)?.color, opacity: 0.95}}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/20">{roles.find(r => r.id === activeRole)?.icon}</div>
+          <div>
+            <h2 className="text-base font-bold text-white">{roles.find(r => r.id === activeRole)?.label}モード 利用ガイド</h2>
+            <p className="text-xs text-white/60">主要な操作手順をステップバイステップで解説します</p>
+          </div>
+        </div>
+
+        {/* Guide content */}
+        {guideContent[activeRole]}
+
+        {/* Bottom navigation */}
+        <div className="flex items-center justify-between p-4 rounded-xl" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+          <div className="text-xs text-[#91918c]">ご不明な点がございましたら、管理者にお問い合わせください。</div>
+          <button onClick={() => navigate("about")} className="text-xs font-medium flex items-center gap-1" style={{color: MORPHY.red}}>本サービスについて <ChevronRight size={12}/></button>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================================
   // ABOUT SCREEN — 本サービスについて
   // ============================================================
   const AboutScreen = () => {
@@ -8632,7 +8798,8 @@ export default function App() {
       case "candidate-training-list": return <CandidateTrainingListScreen/>;
       case "candidate-resume": return <MyResumeScreen/>;
       case "candidate-assessment-take": return <CandidateAssessmentTakeScreen/>;
-      // About
+      // Guide & About
+      case "guide": return <GuideScreen/>;
       case "about": return <AboutScreen/>;
       default: return role === "sales" ? <SalesDashboardScreen/> : role === "candidate" ? <CandidateDashboardScreen/> : role === "customer" ? <JDCreateScreen/> : <DashboardScreen/>;
     }
