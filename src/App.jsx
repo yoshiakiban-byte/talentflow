@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { Search, Users, Briefcase, Target, BookOpen, FileText, ChevronRight, ChevronDown, Star, TrendingUp, AlertCircle, CheckCircle, XCircle, Clock, Building2, MapPin, Monitor, Edit3, Plus, ArrowLeft, BarChart3, Settings, User, Home, List, MessageSquare, Sparkles, RefreshCw, Eye, Download, Filter, Zap, Award, GraduationCap, Calendar, Hash, ArrowUpRight, Shield, Layers, Brain, Send, Clipboard, X, Mail, Paperclip, Copy, UserX, ClipboardList, Bell, Lock, LogIn, CheckSquare, FileCheck } from "lucide-react";
+import { Search, Users, Briefcase, Target, BookOpen, FileText, ChevronRight, ChevronDown, Star, AlertCircle, CheckCircle, XCircle, Clock, Building2, MapPin, Monitor, Edit3, Plus, ArrowLeft, BarChart3, Settings, User, Home, List, MessageSquare, Sparkles, RefreshCw, Eye, Download, Filter, Zap, Award, GraduationCap, Calendar, Hash, ArrowUpRight, Shield, Layers, Brain, Send, Clipboard, X, Mail, Paperclip, UserX, ClipboardList, Bell, Lock, LogIn, CheckSquare, FileCheck } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, PieChart, Pie, Cell } from "recharts";
 
 // ============================================================
@@ -1032,6 +1032,7 @@ export default function App() {
   const [selectedJobCategory, setSelectedJobCategory] = useState(null);
   const [skillMaster, setSkillMaster] = useState(SKILL_MASTER);
   const [selectedSkill, setSelectedSkill] = useState(null);
+  const [selectedCertification, setSelectedCertification] = useState(null);
   const [screenHistory, setScreenHistory] = useState([]);
 
   // JD Assessments: auto-generated per JD, with candidate results
@@ -1245,12 +1246,6 @@ export default function App() {
             </div>
             {isMobile && <button onClick={() => setMobileMenuOpen(false)} className="ml-auto p-1"><X size={18} style={{color: "rgba(255,255,255,0.6)"}}/></button>}
           </div>
-          <select value={role} onChange={handleRoleChange} className="w-full text-white text-xs px-3 py-2" style={{background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: MORPHY.radius.md, fontWeight: 400}}>
-            <option value="sales">営業モード</option>
-            <option value="admin">管理者モード</option>
-            <option value="customer">派遣先企業モード</option>
-            <option value="candidate">スタッフモード</option>
-          </select>
         </div>
         <nav className="flex-1 px-3 py-2">
           {navItems[role]?.map((item, idx) => {
@@ -1276,6 +1271,27 @@ export default function App() {
             );
           })}
         </nav>
+        <div className="px-4 py-3" style={{borderTop: "1px solid rgba(255,255,255,0.06)"}}>
+          {(() => {
+            const userInfo = { admin: { name: "管理 太郎", dept: "人材開発部" }, sales: { name: "営業 花子", dept: "営業第一部" }, customer: { name: "採用 担当", dept: "株式会社ABC商事" }, candidate: null };
+            const u = userInfo[role];
+            return u ? (
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{background: "rgba(255,255,255,0.15)"}}>{u.name.charAt(0)}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium text-white truncate">{u.name}</div>
+                  <div className="text-[10px] truncate" style={{color: "rgba(255,255,255,0.4)"}}>{u.dept}</div>
+                </div>
+              </div>
+            ) : null;
+          })()}
+          <select value={role} onChange={handleRoleChange} className="w-full text-white text-xs px-3 py-2" style={{background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: MORPHY.radius.md, fontWeight: 400}}>
+            <option value="sales">営業モード</option>
+            <option value="admin">管理者モード</option>
+            <option value="customer">派遣先企業モード</option>
+            <option value="candidate">スタッフモード</option>
+          </select>
+        </div>
         <div className="px-3 py-3 space-y-0.5" style={{borderTop: "1px solid rgba(255,255,255,0.06)"}}>
           <button onClick={() => handleNavClick("guide")} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-all duration-200" style={{borderRadius: MORPHY.radius.md, background: screen === "guide" ? "rgba(255,255,255,0.1)" : "transparent", color: screen === "guide" ? "#fff" : "rgba(255,255,255,0.45)", fontWeight: 400}}>
             <BookOpen size={18}/><span>利用ガイド</span>
@@ -3324,39 +3340,63 @@ export default function App() {
         <PageHeader title="営業ダッシュボード" subtitle="募集状況と顧客アクティビティの概要"/>
         <div className="grid grid-cols-4 tf-grid-4 gap-4 mb-6">
           <StatCard featured icon={<List size={20} className="text-white"/>} label="対応中の募集" value={activeJDs.length} sub={`全${allJDs.length}件中`} color="blue" onClick={() => { setDefaultFilter("active"); navigate("sales-jd-list"); }}/>
-          <StatCard icon={<AlertCircle size={20} className="text-[#dc2626]"/>} label="未対応リクエスト" value={pendingIRCount} sub="件" color="red" onClick={() => { setDefaultFilter("pending-ir"); navigate("sales-jd-list"); }}/>
+          <StatCard featured={pendingIRCount > 0} icon={<CheckSquare size={20} className={pendingIRCount > 0 ? "text-white" : "text-[#62625b]"}/>} label="やること" value={pendingIRCount + savedJDs.filter(j => j._savedBy === "customer").length + endingSoon.filter(c => getDaysLeft(c.assignment.endDate) <= 30).length} sub="件" color="red"/>
           <StatCard icon={<Monitor size={20} className="text-[#211922]"/>} label="就業中" value={assigned.length} sub="名" color="blue" onClick={() => { setDefaultFilter("active"); navigate("assignment-list"); }}/>
           <StatCard icon={<Clock size={20} className="text-[#91918c]"/>} label="契約終了間近" value={endingSoon.length} sub="来月末まで" color="red" onClick={() => { setDefaultFilter("ending"); navigate("assignment-list"); }}/>
         </div>
 
-        {/* Two-column: Alerts + Activity */}
-        <div className="grid grid-cols-2 tf-grid-2 gap-5 mb-6">
-          {/* Left: Interview requests + Customer JDs */}
-          <div className="space-y-4">
-            {interviewRequests.filter(sr => sr.status === "未対応").length > 0 && (
-              <Card className="p-4" style={{border: "1px solid #fecaca", background: "#fef2f2"}}>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium flex items-center gap-2 text-[#211922]"><MessageSquare size={14} className="text-[#dc2626]"/>未対応の面談リクエスト</h3>
-                  <button onClick={() => navigate("sales-jd-list")} className="text-xs text-[#dc2626]">すべて →</button>
-                </div>
-                <div className="space-y-1.5">
-                  {interviewRequests.filter(sr => sr.status === "未対応").slice(0, 3).map(sr => {
-                    const cand = CANDIDATES.find(c => c.id === sr.candidateId);
-                    const jd = JDS.find(j => j.id === sr.jdId);
-                    return (
-                      <div key={sr.id} className="flex items-center gap-2 p-2 rounded-lg bg-white cursor-pointer hover:shadow-sm transition-all" style={{border: `1px solid ${MORPHY.cardBorder}`}}
-                        onClick={() => { setEditingJD(jd || JDS[0]); navigate("sales-jd-detail"); }}>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium text-[#211922] truncate">{sr.customerName} → {cand?.name || sr.candidateId}</div>
-                          {jd && <div className="text-xs text-[#91918c] truncate">{jd.title}</div>}
-                        </div>
-                        <span className="text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0" style={{background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", fontSize: "10px"}}>未対応</span>
+        {/* Todo List for Sales */}
+        {(() => {
+          const todos = [];
+          // 1. 未対応の面談リクエスト（最優先）
+          interviewRequests.filter(sr => sr.status === "未対応").forEach(sr => {
+            const cand = CANDIDATES.find(c => c.id === sr.candidateId);
+            const jd = JDS.find(j => j.id === sr.jdId);
+            todos.push({ id: `todo-ir-${sr.id}`, priority: 0, icon: <MessageSquare size={14} className="text-[#dc2626]"/>, label: `${sr.customerName}からの面談リクエストに回答`, sub: `${cand?.name || sr.candidateId}${jd ? ` ・ ${jd.title}` : ""}`, color: "red", action: () => { setEditingJD(jd || JDS[0]); navigate("sales-jd-detail"); } });
+          });
+          // 2. 顧客が作成した募集（確認必要）
+          savedJDs.filter(j => j._savedBy === "customer").forEach(j => {
+            todos.push({ id: `todo-cjd-${j._savedId}`, priority: 1, icon: <FileText size={14} className="text-purple-600"/>, label: `${j._customerName || "顧客"}が作成した募集を確認`, sub: j.title, color: "purple", action: () => { setEditingJD(j); navigate("sales-jd-detail"); } });
+          });
+          // 3. 契約終了間近（30日以内）
+          endingSoon.filter(c => getDaysLeft(c.assignment.endDate) <= 30).forEach(c => {
+            const days = getDaysLeft(c.assignment.endDate);
+            todos.push({ id: `todo-end-${c.id}`, priority: 2, icon: <Clock size={14} className="text-amber-600"/>, label: `${c.name}の契約終了が${days <= 0 ? "過ぎています" : `${days}日後`}`, sub: `${c.assignment.customer} / ${c.assignment.project}`, color: "amber", action: () => navigate("candidate-detail", { candidate: c }) });
+          });
+          // 4. 未受験のアセスメント依頼
+          assessmentRequests.filter(ar => ar.status === "未受験").forEach(ar => {
+            const cand = CANDIDATES.find(c => c.id === ar.candidateId);
+            todos.push({ id: `todo-ar-${ar.id}`, priority: 3, icon: <ClipboardList size={14} className="text-blue-600"/>, label: `${cand?.name || ar.candidateId}のアセスメント結果を待機中`, sub: ar.title + (ar.deadline ? ` ・ 期限: ${ar.deadline}` : ""), color: "blue", action: () => navigate("sales-jd-list") });
+          });
+          todos.sort((a, b) => a.priority - b.priority);
+          const colorMap = { red: { bg: "#fef2f2", border: "#fecaca", dot: "#dc2626" }, purple: { bg: "#f5f3ff", border: "#ddd6fe", dot: "#7c3aed" }, amber: { bg: "#fffbeb", border: "#fde68a", dot: "#d97706" }, blue: { bg: "#eff6ff", border: "#bfdbfe", dot: "#2563eb" } };
+          return todos.length > 0 ? (
+            <Card className="p-4 mb-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-[#211922] flex items-center gap-2"><CheckSquare size={14} style={{color: MORPHY.plumBlack}}/>やることリスト <span className="text-xs font-normal px-2 py-0.5 rounded-full text-white" style={{background: MORPHY.red}}>{todos.length}</span></h3>
+              </div>
+              <div className="space-y-1.5">
+                {todos.slice(0, 6).map(todo => {
+                  const cm = colorMap[todo.color] || colorMap.blue;
+                  return (
+                    <div key={todo.id} className="flex items-center gap-3 p-2.5 rounded-lg cursor-pointer hover:shadow-sm transition-all" style={{background: cm.bg, border: `1px solid ${cm.border}`}} onClick={todo.action}>
+                      <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{borderColor: cm.dot}}/>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium text-[#211922] truncate">{todo.label}</div>
+                        <div className="text-[11px] text-[#91918c] truncate">{todo.sub}</div>
                       </div>
-                    );
-                  })}
-                </div>
-              </Card>
-            )}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">{todo.icon}<ChevronRight size={12} className="text-[#c8c8c1]"/></div>
+                    </div>
+                  );
+                })}
+                {todos.length > 6 && <div className="text-center text-xs text-[#91918c] pt-1">他 {todos.length - 6}件</div>}
+              </div>
+            </Card>
+          ) : null;
+        })()}
+
+        {/* Customer JDs (if any) */}
+        <div className="mb-5">
             {savedJDs.filter(j => j._savedBy === "customer").length > 0 && (
               <Card className="p-4" style={{border: "1px solid #ddd6fe", background: "#faf5ff"}}>
                 <div className="flex items-center justify-between mb-3">
@@ -3376,88 +3416,56 @@ export default function App() {
                 </div>
               </Card>
             )}
-          </div>
-          {/* Right: Contract ending + quick stats */}
-          <div className="space-y-4">
-            {endingSoon.length > 0 && (
-              <Card className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium flex items-center gap-2" style={{color: MORPHY.textPrimary}}><AlertCircle size={14} className="text-[#91918c]"/>契約終了間近</h3>
-                  <button onClick={() => navigate("assignment-list")} className="text-xs" style={{color: MORPHY.textSecondary}}>一覧 →</button>
-                </div>
-                <div className="space-y-1.5">
-                  {endingSoon.slice(0, 4).map(c => {
-                    const days = getDaysLeft(c.assignment.endDate);
-                    return (
-                      <div key={c.id} className="flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-[#f6f6f3] transition-all" style={{border: `1px solid ${MORPHY.cardBorder}`}} onClick={() => navigate("candidate-detail", { candidate: c })}>
-                        <div className="min-w-0">
-                          <div className="text-xs font-medium text-[#211922] truncate">{c.name}</div>
-                          <div className="text-xs text-[#91918c] truncate">{c.assignment.customer}</div>
-                        </div>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${days <= 15 ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"}`}>{days <= 0 ? "終了済" : `残${days}日`}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-            )}
-          </div>
         </div>
 
-        {/* Two-column: Recruitments + Available Staff */}
+        {/* Two-column: Contract ending + Recruitments */}
         <div className="grid grid-cols-2 tf-grid-2 gap-5">
           <Card className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-[#211922]">直近の募集</h3>
-              <button onClick={() => navigate("sales-jd-list")} className="text-xs font-medium text-[#91918c] hover:text-[#211922]">すべて見る →</button>
+              <h3 className="font-medium flex items-center gap-2 text-[#211922]"><AlertCircle size={14} className="text-[#91918c]"/>契約終了間近</h3>
+              <button onClick={() => navigate("assignment-list")} className="text-xs text-[#91918c] hover:text-[#211922]">一覧 →</button>
             </div>
-            <div className="space-y-3">
-              {allJDs.slice(0, 4).map(j => {
+            {endingSoon.length > 0 ? (
+              <div className="space-y-2">
+                {endingSoon.slice(0, 5).map(c => {
+                  const days = getDaysLeft(c.assignment.endDate);
+                  return (
+                    <div key={c.id} className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-[#f6f6f3] transition-all" style={{border: `1px solid ${MORPHY.cardBorder}`}} onClick={() => navigate("candidate-detail", { candidate: c })}>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-[#211922] truncate">{c.name}</div>
+                        <div className="text-xs text-[#91918c] truncate">{c.assignment.customer} / {c.assignment.project}</div>
+                      </div>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${days <= 15 ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"}`}>{days <= 0 ? "終了済" : `残${days}日`}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-sm text-[#91918c]">契約終了間近のスタッフはいません</div>
+            )}
+          </Card>
+          <Card className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-medium text-[#211922]">直近の募集</h3>
+              <button onClick={() => navigate("sales-jd-list")} className="text-xs text-[#91918c] hover:text-[#211922]">すべて見る →</button>
+            </div>
+            <div className="space-y-2">
+              {allJDs.slice(0, 5).map(j => {
                 const pending = interviewRequests.filter(sr => sr.jdId === (j.id || j._savedId) && sr.status === "未対応").length;
                 return (
-                  <div key={j.id || j._savedId} className="flex items-center justify-between p-4 bg-[#f6f6f3]/60 rounded-lg cursor-pointer hover:bg-[#e5e5e0]/50 transition-all duration-200" onClick={() => { setEditingJD(j); navigate("sales-jd-detail"); }}>
-                    <div>
+                  <div key={j.id || j._savedId} className="flex items-center justify-between p-3 bg-[#f6f6f3]/60 rounded-lg cursor-pointer hover:bg-[#e5e5e0]/50 transition-all" onClick={() => { setEditingJD(j); navigate("sales-jd-detail"); }}>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-[#211922]">{j.title}</span>
-                        {pending > 0 && <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{background: "#fef2f2", color: "#dc2626"}}>{pending}件</span>}
+                        <span className="text-sm font-medium text-[#211922] truncate">{j.title}</span>
+                        {pending > 0 && <span className="text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0" style={{background: "#fef2f2", color: "#dc2626"}}>{pending}件</span>}
                       </div>
                       <div className="text-xs text-[#91918c]">{j._customerName} ・ {j.location}</div>
                     </div>
-                    <ChevronRight size={16} className="text-[#c8c8c1]"/>
+                    <ChevronRight size={16} className="text-[#c8c8c1] flex-shrink-0"/>
                   </div>
                 );
               })}
             </div>
-          </Card>
-          <Card className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-[#211922]">提案可能スタッフ</h3>
-              <button onClick={() => navigate("available-candidates")} className="text-xs font-medium text-[#91918c] hover:text-[#211922]">一覧を見る →</button>
-            </div>
-            {(() => {
-              const available = CANDIDATES.filter(c => c.status === "提案可能").sort((a, b) => b.experience - a.experience);
-              return available.length > 0 ? (
-                <div className="space-y-3">
-                  {available.slice(0, 5).map(c => (
-                    <div key={c.id} className="flex items-center justify-between p-3.5 bg-[#f6f6f3]/60 border border-[#e5e5e0] rounded-lg cursor-pointer hover:bg-[#f6f6f3] transition-all duration-200" onClick={() => navigate("candidate-detail", { candidate: c })}>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium" style={{color: MORPHY.textPrimary}}>{c.name}</span>
-                          <EmploymentBadge type={c.employmentType}/>
-                          <span className="text-xs bg-[#e5e5e0] text-[#211922]/80 px-2 py-0.5 rounded-full font-medium">提案可能</span>
-                        </div>
-                        <div className="text-xs mt-1" style={{color: MORPHY.textMuted}}>{c.unitPrice}万円/月 ・ {c.age}歳 ・ {c.location}</div>
-                        <div className="flex gap-1 mt-1.5">{c.skills.slice(0, 3).map(sk => <span key={sk.name} className="text-xs bg-white border border-[#e5e5e0] px-2 py-0.5 rounded-full">{sk.name}</span>)}</div>
-                      </div>
-                      <ChevronRight size={16} className="text-[#c8c8c1] ml-3"/>
-                    </div>
-                  ))}
-                  {available.length > 5 && <div className="text-center text-xs text-[#91918c] pt-1">他 {available.length - 5}名</div>}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-32 text-sm text-[#91918c]">現在提案可能な人材はいません</div>
-              );
-            })()}
           </Card>
         </div>
       </div>
@@ -3696,71 +3704,43 @@ export default function App() {
     return (
       <div>
         <PageHeader title="管理者ダッシュボード" subtitle="職種マスタ・育成計画・就業状況の全体像"/>
-        <div className="grid grid-cols-4 tf-grid-4 gap-4 mb-6">
+        <div className="grid grid-cols-3 tf-grid-3 gap-4 mb-6">
           <StatCard featured icon={<Users size={20} className="text-white"/>} label="全スタッフ" value={CANDIDATES.length} sub={`正社員${employeeCount} ・ FL${freelanceCount}`} color="blue" onClick={() => navigate("assignment-list")}/>
           <StatCard icon={<Target size={20} className="text-[#62625b]"/>} label="育成計画" value={workforcePlans.length} sub="進行中" color="purple" onClick={() => navigate("plans")}/>
-          <StatCard icon={<GraduationCap size={20} className="text-[#62625b]"/>} label="育成中" value={trainingCount} sub="正社員スキルアップ" color="amber" onClick={() => navigate("training")}/>
           <StatCard icon={<Monitor size={20} className="text-[#211922]"/>} label="就業率" value={`${Math.round((activeCount / CANDIDATES.length) * 100)}%`} sub={`${activeCount}名 / ${CANDIDATES.length}名`} color="blue" onClick={() => navigate("assignment-list")}/>
         </div>
 
-        <div className="grid grid-cols-2 tf-grid-2 gap-6">
-          <Card className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-[#211922]">育成計画 進捗</h3>
-              <button onClick={() => navigate("plans")} className="text-xs font-medium text-[#91918c] hover:text-[#211922]">育成計画一覧 →</button>
-            </div>
-            <div className="space-y-4">
-              {workforcePlans.map(p => {
-                const secured = p.stats.ready + (p.stats.assigned || 0);
-                const securedPct = Math.round((secured / p.headcount) * 100);
-                const trainingPct = Math.round((p.stats.training / p.headcount) * 100);
-                return (
-                  <div key={p.id} className="p-4 rounded-lg cursor-pointer hover:bg-[#f6f6f3]/80 transition-all duration-200" style={{backgroundColor: `${MORPHY.warmWash}`}} onClick={() => navigate("plan-detail", { plan: p })}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-sm font-medium text-[#211922]">{p.targetRole}</span>
-                        <span className="text-xs text-[#91918c] ml-2">目標 {p.headcount}名</span>
-                      </div>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.priority === "高" ? "bg-red-50 text-red-600" : "bg-yellow-50 text-yellow-600"}`}>{p.priority}</span>
-                    </div>
-                    <div className="w-full h-5 rounded-full overflow-hidden flex" style={{backgroundColor: MORPHY.cardBorder}}>
-                      {secured > 0 && <div className="h-full flex items-center justify-center text-[10px] text-white font-medium" style={{width: `${Math.min(securedPct, 100)}%`, backgroundColor: MORPHY.plumBlack}}>{secured}</div>}
-                      {(p.stats.training || 0) > 0 && <div className="h-full flex items-center justify-center text-[10px] text-[#211922] font-medium" style={{width: `${Math.min(trainingPct, 100 - Math.min(securedPct, 100))}%`, backgroundColor: "#c8c8c1"}}>{p.stats.training}</div>}
-                    </div>
-                    <div className="flex items-center gap-4 mt-2 text-[11px] text-[#91918c]">
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{backgroundColor: MORPHY.plumBlack}}/>確保済み {secured}</span>
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{backgroundColor: "#c8c8c1"}}/>育成中 {p.stats.training || 0}</span>
-                      <span className="ml-auto font-medium" style={{color: securedPct >= 80 ? "#15803d" : securedPct >= 50 ? "#ca8a04" : "#e60023"}}>{securedPct}%</span>
-                    </div>
+        <Card className="p-5 mb-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-medium text-[#211922]">育成計画 進捗</h3>
+            <button onClick={() => navigate("plans")} className="text-xs font-medium text-[#91918c] hover:text-[#211922]">育成計画一覧 →</button>
+          </div>
+          <div className="grid grid-cols-3 tf-grid-3 gap-3">
+            {workforcePlans.map(p => {
+              const secured = p.stats.ready + (p.stats.assigned || 0);
+              const securedPct = Math.round((secured / p.headcount) * 100);
+              const trainingPct = Math.round((p.stats.training / p.headcount) * 100);
+              return (
+                <div key={p.id} className="p-4 rounded-lg cursor-pointer hover:bg-[#f6f6f3]/80 transition-all duration-200" style={{backgroundColor: MORPHY.warmWash}} onClick={() => navigate("plan-detail", { plan: p })}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-[#211922]">{p.targetRole}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.priority === "高" ? "bg-red-50 text-red-600" : "bg-yellow-50 text-yellow-600"}`}>{p.priority}</span>
                   </div>
-                );
-              })}
-            </div>
-          </Card>
-          <Card className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-[#211922]">人材ステータス分布</h3>
-              <span className="text-xs text-[#91918c]">全{totalMembers}名</span>
-            </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={statusData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value" label={({name, value}) => `${value}名`} labelLine={false}>
-                  {statusData.map((entry, i) => <Cell key={i} fill={entry.fill}/>)}
-                </Pie>
-                <Tooltip formatter={(value, name) => [`${value}名（${Math.round(value / totalMembers * 100)}%）`, name]}/>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex items-center justify-center gap-5 mt-2">
-              {statusData.map((d, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-xs text-[#62625b]">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: d.fill}}/>
-                  <span>{d.name}</span>
-                  <span className="font-medium text-[#211922]">{d.value}</span>
+                  <div className="text-xs text-[#91918c] mb-2">目標 {p.headcount}名</div>
+                  <div className="w-full h-4 rounded-full overflow-hidden flex" style={{backgroundColor: MORPHY.cardBorder}}>
+                    {secured > 0 && <div className="h-full flex items-center justify-center text-[10px] text-white font-medium" style={{width: `${Math.min(securedPct, 100)}%`, backgroundColor: MORPHY.plumBlack}}>{secured}</div>}
+                    {(p.stats.training || 0) > 0 && <div className="h-full flex items-center justify-center text-[10px] text-[#211922] font-medium" style={{width: `${Math.min(trainingPct, 100 - Math.min(securedPct, 100))}%`, backgroundColor: "#c8c8c1"}}>{p.stats.training}</div>}
+                  </div>
+                  <div className="flex items-center gap-3 mt-2 text-[10px] text-[#91918c]">
+                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: MORPHY.plumBlack}}/>確保 {secured}</span>
+                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: "#c8c8c1"}}/>育成 {p.stats.training || 0}</span>
+                    <span className="ml-auto font-medium" style={{color: securedPct >= 80 ? "#15803d" : securedPct >= 50 ? "#ca8a04" : "#e60023"}}>{securedPct}%</span>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+              );
+            })}
+          </div>
+        </Card>
 
         {/* Job Categories - compact inline */}
         <Card className="p-4 mt-5">
@@ -3819,7 +3799,7 @@ export default function App() {
               return (
                 <div className="space-y-2">
                   {certData.map((d, i) => (
-                    <div key={d.name} className="flex items-center gap-2">
+                    <div key={d.name} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => { setSelectedCertification(d.name); navigate("cert-holders"); }}>
                       <span className="text-xs text-[#91918c] w-24 truncate text-right flex-shrink-0" title={d.name}>{d.name}</span>
                       <div className="flex-1 h-5 rounded overflow-hidden" style={{backgroundColor: MORPHY.warmWash}}>
                         <div className="h-full rounded flex items-center px-2 transition-all duration-500" style={{width: `${Math.max((d.count / certData[0].count) * 100, 15)}%`, backgroundColor: i === 0 ? MORPHY.red : i < 3 ? MORPHY.plumBlack : i < 5 ? "#62625b" : "#91918c"}}>
@@ -3874,7 +3854,24 @@ export default function App() {
       const updated = { ...p, candidates: [...p.candidates, ...newCandidates] };
       setSelectedPlan(updated);
       setWorkforcePlans(prev => prev.map(wp => wp.id === p.id ? updated : wp));
-      showToast(`${newCandidates.length}名を育成要員に追加しました`);
+      // 各スタッフに研修受講指示を発行（計画スキルに関連する研修をcandidateTrainingsに追加）
+      const planSkills = p.skills.map(s => s.toLowerCase());
+      const relevantTrainings = TRAINING_MASTER.filter(t => (t.targetSkills || []).some(ts => planSkills.some(ps => ts.toLowerCase().includes(ps))));
+      if (relevantTrainings.length > 0) {
+        setCandidateTrainings(prev => {
+          let updated = [...prev];
+          newCandidates.forEach(nc => {
+            relevantTrainings.forEach(tr => {
+              const exists = updated.some(ct => ct.candidateId === nc.id && ct.trainingId === tr.id);
+              if (!exists) {
+                updated.push({ candidateId: nc.id, trainingId: tr.id, status: "未着手", progress: 0, startDate: new Date().toISOString().slice(0, 10).replace(/-/g, "/") });
+              }
+            });
+          });
+          return updated;
+        });
+      }
+      showToast(`${newCandidates.length}名を育成要員に追加し、研修受講指示を送信しました`);
       navigate("plan-detail", { plan: updated });
     };
 
@@ -3967,6 +3964,78 @@ export default function App() {
               <button onClick={addMembers} className="px-5 py-2.5 rounded-lg text-sm font-medium text-white flex items-center gap-2 hover:bg-[#cc001f] transition-colors" style={{background: "#e60023"}}><Plus size={14}/>育成要員に追加</button>
             </div>
           </div>
+        )}
+      </div>
+    );
+  };
+
+  // ============================================================
+  // CERTIFICATION HOLDERS (Admin)
+  // ============================================================
+  const CertHoldersScreen = () => {
+    const certName = selectedCertification;
+    if (!certName) return <div className="text-center py-20"><p className="text-[#91918c] mb-4">資格が選択されていません</p><button onClick={goBack} className="px-4 py-2 rounded-lg text-sm bg-[#e60023] text-white hover:bg-[#cc001f]">戻る</button></div>;
+
+    const holders = CANDIDATES.filter(c => (c.certifications || []).some(cert => {
+      const short = cert.replace("AWS Solutions Architect", "AWS SA").replace("AWS Cloud Practitioner", "AWS CP").replace("AWS DevOps Engineer", "AWS DevOps").replace("AWS Machine Learning", "AWS ML").replace("AWS Security", "AWS Security").replace("Professional", "Pro").replace("Associate", "Assoc").replace("Google Cloud Professional Cloud Architect", "GCP Architect").replace("Google Associate Android Developer", "Android Dev").replace("情報処理安全確保支援士", "情報安全確保支援士").replace("データベーススペシャリスト", "DBスペシャリスト").replace("IPA プロジェクトマネージャ", "IPA PM");
+      return short === certName;
+    }));
+
+    return (
+      <div>
+        <PageHeader title={`${certName} 保有者一覧`} subtitle={`${holders.length}名のスタッフが保有`} onBack={goBack}/>
+
+        <div className="flex items-center gap-3 p-4 rounded-xl mb-6" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: MORPHY.red}}><Award size={18} className="text-white"/></div>
+          <div>
+            <div className="text-base font-bold text-[#211922]">{certName}</div>
+            <div className="text-xs text-[#91918c]">{holders.length}名が保有 ・ 全{CANDIDATES.length}名中</div>
+          </div>
+          <div className="ml-auto text-right">
+            <div className="text-2xl font-bold" style={{color: MORPHY.red}}>{Math.round((holders.length / CANDIDATES.length) * 100)}%</div>
+            <div className="text-[10px] text-[#91918c]">保有率</div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          {holders.map(c => (
+            <Card key={c.id} className="p-4 cursor-pointer hover:shadow-md transition-all" onClick={() => navigate("candidate-detail", { candidate: c })}>
+              <div className="flex items-center gap-4">
+                <CandidateAvatar candidate={c} size="md"/>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-[#211922]">{c.name}</span>
+                    <EmploymentBadge type={c.employmentType}/>
+                    <StatusBadge status={c.status}/>
+                    <span className="text-xs text-[#91918c]">{c.id}</span>
+                  </div>
+                  <div className="text-xs text-[#91918c] mt-0.5">{c.currentRole} ・ 経験{c.totalYears}年 ・ {c.location}</div>
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {c.skills.slice(0, 5).map(s => (
+                      <span key={s.name} className="text-xs px-2 py-0.5 rounded-full bg-[#f6f6f3] text-[#62625b] border border-[#e5e5e0]">{s.name}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  {c.assignment ? (
+                    <div>
+                      <div className="text-xs text-[#91918c]">就業中</div>
+                      <div className="text-xs font-medium text-[#211922]">{c.assignment.customer}</div>
+                    </div>
+                  ) : (
+                    <span className="text-xs px-2 py-1 rounded-full" style={{background: c.status === "提案可能" ? "#dcfce7" : MORPHY.warmWash, color: c.status === "提案可能" ? "#15803d" : "#91918c"}}>{c.status}</span>
+                  )}
+                </div>
+                <ChevronRight size={16} className="text-[#c8c8c1] flex-shrink-0"/>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {holders.length === 0 && (
+          <Card className="p-10 text-center">
+            <p className="text-sm text-[#91918c]">この資格を保有するスタッフはいません</p>
+          </Card>
         )}
       </div>
     );
@@ -5257,6 +5326,23 @@ export default function App() {
         stats: { ready: 0, training: selectedCandidates.length }
       };
       setWorkforcePlans(prev => [...prev, newPlan]);
+      // 各スタッフに研修受講指示を発行
+      const planSkills = form.skills.map(s => s.toLowerCase());
+      const relevantTrainings = TRAINING_MASTER.filter(t => (t.targetSkills || []).some(ts => planSkills.some(ps => ts.toLowerCase().includes(ps))));
+      if (relevantTrainings.length > 0 && selectedCandidates.length > 0) {
+        setCandidateTrainings(prev => {
+          let upd = [...prev];
+          selectedCandidates.forEach(cId => {
+            relevantTrainings.forEach(tr => {
+              if (!upd.some(ct => ct.candidateId === cId && ct.trainingId === tr.id)) {
+                upd.push({ candidateId: cId, trainingId: tr.id, status: "未着手", progress: 0, startDate: new Date().toISOString().slice(0, 10).replace(/-/g, "/") });
+              }
+            });
+          });
+          return upd;
+        });
+        showToast(`${selectedCandidates.length}名に研修受講指示を送信しました`);
+      }
       navigate("plan-detail", { plan: newPlan });
     };
 
@@ -5284,7 +5370,7 @@ export default function App() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 tf-grid-2 gap-4">
                     <div><label className="text-xs text-[#91918c] mb-1 block">計画名</label><input className="w-full border border-[#e5e5e0] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e60023]/10 focus:border-[#c8c8c1] transition-all duration-200" placeholder="例：経理スタッフ増強計画" value={form.title} onChange={e => { const v = e.target.value; setForm(f => ({...f, title: v})); }}/></div>
-                    <div><label className="text-xs text-[#91918c] mb-1 block">目標職種 <span className="text-red-500">*</span></label><input className="w-full border border-[#e5e5e0] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e60023]/10 focus:border-[#c8c8c1] transition-all duration-200" placeholder="例：経理事務スタッフ" value={form.targetRole} onChange={e => { const v = e.target.value; setForm(f => ({...f, targetRole: v})); }}/></div>
+                    <div><label className="text-xs text-[#91918c] mb-1 block">目標職種 <span className="text-red-500">*</span></label><select className="w-full border border-[#e5e5e0] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e60023]/10 focus:border-[#c8c8c1] transition-all duration-200 bg-white" value={form.targetRole} onChange={e => setForm(f => ({...f, targetRole: e.target.value}))}><option value="">選択してください</option>{jobCategories.map(jc => <option key={jc.id} value={jc.name}>{jc.name}</option>)}</select></div>
                   </div>
                   <div className="grid grid-cols-3 tf-grid-3 gap-4">
                     <div><label className="text-xs text-[#91918c] mb-1 block">必要人数 <span className="text-red-500">*</span></label><input type="number" min="1" className="w-full border border-[#e5e5e0] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e60023]/10 focus:border-[#c8c8c1] transition-all duration-200" value={form.headcount} onChange={e => { const v = e.target.value; setForm(f => ({...f, headcount: v})); }}/></div>
@@ -5770,59 +5856,9 @@ export default function App() {
 
     return (
       <div>
-        <PageHeader title={selectedJD && autoSearched ? `「${selectedJD.title}」の候補者探索` : "候補者探索"} subtitle={role === "customer" ? "JD・AIに相談の2つのモードで候補者を探索" : "JD・企業・AIに相談の3つのモードで候補者を探索"} onBack={selectedJD && autoSearched ? () => { setSelectedJD(null); goBack(); } : undefined}/>
+        <PageHeader title={selectedJD && autoSearched ? `「${selectedJD.title}」の候補者探索` : "スタッフ検索"} subtitle="AIに相談して最適な候補者を探索" onBack={selectedJD && autoSearched ? () => { setSelectedJD(null); goBack(); } : undefined}/>
         {!(selectedJD && autoSearched) && <Card className="p-4 mb-6">
-          <div className="inline-flex gap-1 p-1 bg-[#e5e5e0]/50 rounded-lg mb-4 tf-search-tabs flex-wrap">
-            {[{ id: "jd", label: "募集JDから探す", icon: <FileText size={16}/> }, ...(role !== "customer" ? [{ id: "company", label: "企業特性から探す", icon: <Building2 size={16}/> }] : []), { id: "free", label: "AIに相談して探す", icon: <Brain size={16}/> }].map(m => (
-              <button key={m.id} onClick={() => { setLocalSearchMode(m.id); setSearchDone(false); }} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-medium transition-all duration-200 ${localSearchMode === m.id ? "bg-[#e60023] text-white" : "text-[#91918c] hover:text-[#211922] hover:bg-[#e5e5e0]/50"}`}>{m.icon}{m.label}</button>
-            ))}
-          </div>
-
-          {localSearchMode === "jd" && (
-            <div className="flex gap-3 items-end">
-              <div className="flex-1"><label className="text-xs text-[#91918c] mb-1 block">JDを選択</label><select className="w-full border border-[#e5e5e0] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e60023]/10 focus:border-[#c8c8c1] transition-all duration-200" value={selectedSearchJD?.id} onChange={e => setSelectedSearchJD(allSearchJDs.find(j => j.id === e.target.value))}>{allSearchJDs.map(j => <option key={j.id} value={j.id}>{j.title}（{j.id}）</option>)}</select></div>
-              <button onClick={doSearch} className="bg-[#e60023] text-white rounded-2xl transition-all duration-200 px-6 py-2 text-sm flex items-center gap-2"><Search size={16}/>検索</button>
-            </div>
-          )}
-          {localSearchMode === "company" && (
-            <div>
-              <div className="flex gap-3 items-end mb-4">
-                <div className="flex-1">
-                  <label className="text-xs text-[#91918c] mb-1 block">企業を選択</label>
-                  <select className="w-full border border-[#e5e5e0] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e60023]/10 focus:border-[#c8c8c1] transition-all duration-200" value={selectedCompany?.id} onChange={e => setSelectedCompany(COMPANIES.find(co => co.id === e.target.value))}>
-                    {COMPANIES.map(co => <option key={co.id} value={co.id}>{co.name}（{co.industry}）</option>)}
-                  </select>
-                </div>
-                <button onClick={companySearch} disabled={companySearching} className="bg-[#e60023] text-white rounded-2xl transition-all duration-200 px-6 py-2 text-sm flex items-center gap-2 disabled:opacity-50">
-                  {companySearching ? <RefreshCw size={16} className="animate-spin"/> : <Search size={16}/>}マッチング検索
-                </button>
-              </div>
-              {selectedCompany && (
-                <div className="bg-[#f6f6f3] rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Building2 size={16} className="text-[#211922]"/>
-                    <span className="text-sm font-medium text-[#211922]">{selectedCompany.name}</span>
-                    <span className="text-xs bg-[#f6f6f3] text-[#211922] px-2 py-0.5 rounded">{selectedCompany.industry}</span>
-                    <span className="text-xs text-[#91918c]">規模: {selectedCompany.size}</span>
-                  </div>
-                  <div className="grid grid-cols-3 tf-grid-3 gap-4 text-xs">
-                    <div>
-                      <span className="text-[#91918c]">企業カルチャー</span>
-                      <div className="flex flex-wrap gap-1 mt-1">{selectedCompany.culture.map(cu => <span key={cu} className="text-xs bg-[#f6f6f3]/60 text-[#211922] border border-[#e5e5e0] px-2 py-0.5 rounded-full">{cu}</span>)}</div>
-                    </div>
-                    <div>
-                      <span className="text-[#91918c]">技術スタック</span>
-                      <div className="flex flex-wrap gap-1 mt-1">{selectedCompany.techStack.map(t => <span key={t} className="bg-[#f6f6f3] text-[#211922] border border-[#e5e5e0] px-1.5 py-0.5 rounded">{t}</span>)}</div>
-                    </div>
-                    <div>
-                      <span className="text-[#91918c]">働き方 / 勤務地</span>
-                      <div className="mt-1 text-[#62625b]">{selectedCompany.workStyle} ・ {selectedCompany.location}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+          {(() => { if (localSearchMode !== "free") setLocalSearchMode("free"); return null; })()}
           {localSearchMode === "free" && (
             <div>
               <label className="text-xs text-[#91918c] mb-1 block">探したい人材像を自由に記述</label>
@@ -7461,15 +7497,97 @@ export default function App() {
           );
         })()}
 
+        {/* Career Growth Attract */}
+        {(() => {
+          const myT = candidateTrainings.filter(ct => ct.candidateId === c.id);
+          const myDoneTrainingIds = myT.filter(ct => ct.status === "完了").map(ct => ct.trainingId);
+          const myCertifiedSkills = skillMaster.filter(sk => sk.certifiedCandidates.includes(c.id));
+          const myCertifiedSkillIds = myCertifiedSkills.map(sk => sk.id);
+          const alerts = [];
+
+          // 1. 職種認定の条件達成チェック
+          jobCategories.forEach(jc => {
+            if (jc.certifiedCandidates.includes(c.id)) return; // 既に認定済み
+            const requiredSkills = jc.skills || [];
+            if (requiredSkills.length === 0) return;
+            const matchedSkills = requiredSkills.filter(rs => myCertifiedSkills.some(sk => sk.name === rs));
+            if (matchedSkills.length === requiredSkills.length) {
+              alerts.push({ type: "job-ready", priority: 0, icon: <Star size={16} className="text-white"/>, bg: `linear-gradient(135deg, ${MORPHY.red}, #ff4d6a)`, title: `「${jc.name}」職種の認定条件を達成しました！`, desc: "必要なスキルがすべて揃いました。職種アセスメントを受験して認定を取得しましょう。", action: () => navigate("candidate-assessments"), actionLabel: "アセスメントへ" });
+            } else if (matchedSkills.length > 0) {
+              const remaining = requiredSkills.filter(rs => !myCertifiedSkills.some(sk => sk.name === rs));
+              alerts.push({ type: "job-progress", priority: 2, icon: <Target size={14} style={{color: "#7C3AED"}}/>, bg: null, title: `「${jc.name}」職種まであと${remaining.length}スキル`, desc: `取得済み: ${matchedSkills.join("、")}。あと「${remaining.join("、")}」を取得すると認定条件を満たします。`, action: () => navigate("candidate-assessments"), actionLabel: "スキル一覧" });
+            }
+          });
+
+          // 2. スキル認定が近いもの（前提研修の大部分が完了）
+          skillMaster.forEach(sk => {
+            if (sk.certifiedCandidates.includes(c.id)) return;
+            const prereqs = sk.prerequisiteTrainings || [];
+            if (prereqs.length === 0) return;
+            const doneCount = prereqs.filter(tid => myDoneTrainingIds.includes(tid)).length;
+            if (doneCount === prereqs.length) return; // 全完了は Todoリストで表示済み
+            if (doneCount > 0 && doneCount >= prereqs.length - 1) {
+              const remainingTr = prereqs.filter(tid => !myDoneTrainingIds.includes(tid)).map(tid => TRAINING_MASTER.find(t => t.id === tid)?.title || tid);
+              // このスキルを取ると開放される職種を探す
+              const unlocksJobs = jobCategories.filter(jc => !jc.certifiedCandidates.includes(c.id) && (jc.skills || []).includes(sk.name));
+              alerts.push({ type: "skill-near", priority: 1, icon: <Zap size={14} style={{color: "#D97706"}}/>, bg: null, title: `「${sk.name}」スキル取得まであと少し！`, desc: `「${remainingTr.join("、")}」を完了するとアセスメントが受験可能に。${unlocksJobs.length > 0 ? `このスキルを取得すると「${unlocksJobs.map(j => j.name).join("、")}」職種の条件に近づきます。` : ""}`, action: () => navigate("candidate-training-list"), actionLabel: "研修一覧" });
+            }
+          });
+
+          alerts.sort((a, b) => a.priority - b.priority);
+          if (alerts.length === 0) return null;
+
+          return (
+            <div className="space-y-3 mb-6">
+              {alerts.slice(0, 3).map((alert, i) => (
+                alert.bg ? (
+                  <div key={i} className="p-4 rounded-xl flex items-center gap-4 cursor-pointer hover:opacity-95 transition-all" style={{background: alert.bg}} onClick={alert.action}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{background: "rgba(255,255,255,0.2)"}}>{alert.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-white mb-0.5">{alert.title}</div>
+                      <div className="text-xs text-white/70">{alert.desc}</div>
+                    </div>
+                    <button className="px-4 py-2 rounded-lg text-xs font-semibold bg-white flex-shrink-0" style={{color: MORPHY.red}}>{alert.actionLabel}</button>
+                  </div>
+                ) : (
+                  <div key={i} className="p-4 rounded-xl flex items-center gap-4 cursor-pointer hover:shadow-sm transition-all" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}} onClick={alert.action}>
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{background: "#fff", border: `1px solid ${MORPHY.cardBorder}`}}>{alert.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-[#211922] mb-0.5">{alert.title}</div>
+                      <div className="text-xs text-[#91918c]" style={{lineHeight: 1.6}}>{alert.desc}</div>
+                    </div>
+                    <ChevronRight size={14} className="text-[#c8c8c1] flex-shrink-0"/>
+                  </div>
+                )
+              ))}
+            </div>
+          );
+        })()}
+
         {/* 1. Todo List */}
         {(() => {
           const myT = candidateTrainings.filter(ct => ct.candidateId === c.id);
           const myDoneT = myT.filter(ct => ct.status === "完了").map(ct => ct.trainingId);
           const todos = [];
+          // Helper: find what skills a training unlocks
+          const trainingUnlocks = (trainingId) => {
+            const unlocked = skillMaster.filter(sk => !sk.certifiedCandidates.includes(c.id) && (sk.prerequisiteTrainings || []).includes(trainingId));
+            return unlocked.map(sk => {
+              const jobs = jobCategories.filter(jc => !jc.certifiedCandidates.includes(c.id) && (jc.skills || []).includes(sk.name));
+              return { skill: sk.name, jobs: jobs.map(j => j.name) };
+            });
+          };
+          const formatUnlock = (unlocks) => {
+            if (unlocks.length === 0) return "";
+            const parts = unlocks.map(u => u.jobs.length > 0 ? `→「${u.skill}」認定 →「${u.jobs.join("・")}」職種に前進` : `→「${u.skill}」認定に前進`);
+            return parts[0];
+          };
           // 1. 確認テスト待ちの研修
           myT.filter(ct => ct.status === "確認テスト待ち").forEach(ct => {
             const tr = TRAINING_MASTER.find(t => t.id === ct.trainingId);
-            todos.push({ id: `todo-test-${ct.trainingId}`, type: "test", priority: 1, icon: <FileCheck size={14} className="text-amber-600"/>, label: `${tr?.name || ct.trainingId}の習得確認テストを受験`, sub: "研修完了に必要", color: "amber", action: () => navigate("candidate-training-list") });
+            const unlocks = trainingUnlocks(ct.trainingId);
+            const attract = formatUnlock(unlocks);
+            todos.push({ id: `todo-test-${ct.trainingId}`, type: "test", priority: 1, icon: <FileCheck size={14} className="text-amber-600"/>, label: `${tr?.name || ct.trainingId}の習得確認テストを受験`, sub: attract || "研修完了に必要", attract, color: "amber", action: () => navigate("candidate-training-list") });
           });
           // 2. 未受験アセスメント（期限順）
           pendingAssessments.sort((a, b) => (a.deadline || "9999").localeCompare(b.deadline || "9999")).forEach(ar => {
@@ -7483,12 +7601,16 @@ export default function App() {
             const met = prereqs.length === 0 || prereqs.every(tid => myDoneT.includes(tid));
             return met && !sk.certifiedCandidates.includes(c.id) && !pendingAssessments.some(ar => ar.title.includes(sk.name));
           }).forEach(sk => {
-            todos.push({ id: `todo-sk-${sk.id}`, type: "skill", priority: 3, icon: <Award size={14} className="text-purple-500"/>, label: `${sk.name}アセスメントが受験可能`, sub: "スキル認定に必要", color: "purple", action: () => navigate("candidate-assessments") });
+            const jobs = jobCategories.filter(jc => !jc.certifiedCandidates.includes(c.id) && (jc.skills || []).includes(sk.name));
+            const attract = jobs.length > 0 ? `合格すると「${jobs.map(j => j.name).join("・")}」職種の条件に近づきます` : "合格でスキル認定を取得";
+            todos.push({ id: `todo-sk-${sk.id}`, type: "skill", priority: 3, icon: <Award size={14} className="text-purple-500"/>, label: `${sk.name}アセスメントが受験可能`, sub: attract, attract, color: "purple", action: () => navigate("candidate-assessments") });
           });
           // 4. 受講中の研修
           myT.filter(ct => ct.status === "受講中").forEach(ct => {
             const tr = TRAINING_MASTER.find(t => t.id === ct.trainingId);
-            todos.push({ id: `todo-train-${ct.trainingId}`, type: "training", priority: 4, icon: <BookOpen size={14} className="text-blue-500"/>, label: `${tr?.name || ct.trainingId}を受講中`, sub: `進捗 ${ct.progress || 0}%`, color: "blue", action: () => navigate("candidate-training-list") });
+            const unlocks = trainingUnlocks(ct.trainingId);
+            const attract = formatUnlock(unlocks);
+            todos.push({ id: `todo-train-${ct.trainingId}`, type: "training", priority: 4, icon: <BookOpen size={14} className="text-blue-500"/>, label: `${tr?.name || ct.trainingId}を受講中`, sub: attract ? `進捗 ${ct.progress || 0}% ・ ${attract}` : `進捗 ${ct.progress || 0}%`, attract, color: "blue", action: () => navigate("candidate-training-list") });
           });
           // Sort by priority
           todos.sort((a, b) => a.priority - b.priority);
@@ -8421,6 +8543,55 @@ export default function App() {
     const guideContent = {
       admin: (
         <div>
+          {/* 全体構造図 */}
+          <Section title="TalentFlowの全体構造" icon={<Layers size={16} style={{color: MORPHY.red}}/>}>
+            <p className="text-xs text-[#62625b] mb-5" style={{lineHeight: 1.8}}>TalentFlowでは「職種」「スキル」「研修」の3つのマスタが連動し、スタッフの育成から配置までを一気通貫で管理します。まずこの関係を理解することが運用の第一歩です。</p>
+            {/* Relationship diagram */}
+            <div className="p-5 rounded-xl mb-5" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white" style={{border: `1px solid ${MORPHY.cardBorder}`}}><Layers size={14} style={{color: MORPHY.plumBlack}}/><span className="text-xs font-bold text-[#211922]">職種マスタ</span></div>
+                <div className="text-xs text-[#91918c]">には複数の</div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white" style={{border: `1px solid ${MORPHY.cardBorder}`}}><Zap size={14} style={{color: MORPHY.red}}/><span className="text-xs font-bold text-[#211922]">スキル</span></div>
+                <div className="text-xs text-[#91918c]">が紐づき、各スキルには</div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white" style={{border: `1px solid ${MORPHY.cardBorder}`}}><BookOpen size={14} style={{color: "#D97706"}}/><span className="text-xs font-bold text-[#211922]">前提研修</span></div>
+                <div className="text-xs text-[#91918c]">が設定されます</div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-white" style={{border: `2px solid ${MORPHY.plumBlack}`}}>
+                  <div className="text-xs font-bold text-[#211922] mb-2 flex items-center gap-1.5"><Layers size={12} style={{color: MORPHY.plumBlack}}/>職種</div>
+                  <p className="text-[11px] text-[#91918c]" style={{lineHeight: 1.7}}>例：「経理事務」「営業事務」など。どんなスキルが必要かを定義する上位カテゴリ。</p>
+                </div>
+                <div className="p-3 rounded-lg bg-white" style={{border: `2px solid ${MORPHY.red}`}}>
+                  <div className="text-xs font-bold text-[#211922] mb-2 flex items-center gap-1.5"><Zap size={12} style={{color: MORPHY.red}}/>スキル</div>
+                  <p className="text-[11px] text-[#91918c]" style={{lineHeight: 1.7}}>例：「OAスキル」「経理実務」など。職種に必要な能力単位。前提研修を完了→アセスメント合格でスタッフに認定。</p>
+                </div>
+                <div className="p-3 rounded-lg bg-white" style={{border: `2px solid #D97706`}}>
+                  <div className="text-xs font-bold text-[#211922] mb-2 flex items-center gap-1.5"><BookOpen size={12} style={{color: "#D97706"}}/>研修</div>
+                  <p className="text-[11px] text-[#91918c]" style={{lineHeight: 1.7}}>例：「Excel実務研修」「簿記2級講座」など。スキル認定の前提となる学習プログラム。</p>
+                </div>
+              </div>
+            </div>
+            {/* Flow explanation */}
+            <div className="p-5 rounded-xl" style={{background: "#fff", border: `1px solid ${MORPHY.cardBorder}`}}>
+              <div className="text-xs font-bold text-[#211922] mb-3">データの流れ（例：「経理事務」職種の場合）</div>
+              <div className="flex items-center gap-2 flex-wrap text-xs">
+                <span className="px-3 py-1.5 rounded-lg font-medium" style={{background: MORPHY.plumBlack, color: "#fff"}}>経理事務</span>
+                <ChevronRight size={12} className="text-[#c8c8c1]"/>
+                <span className="text-[#91918c]">必要スキル:</span>
+                <span className="px-2 py-1 rounded-md font-medium" style={{background: `${MORPHY.red}10`, color: MORPHY.red, border: `1px solid ${MORPHY.red}30`}}>OAスキル</span>
+                <span className="px-2 py-1 rounded-md font-medium" style={{background: `${MORPHY.red}10`, color: MORPHY.red, border: `1px solid ${MORPHY.red}30`}}>経理実務</span>
+                <ChevronRight size={12} className="text-[#c8c8c1]"/>
+                <span className="text-[#91918c]">前提研修:</span>
+                <span className="px-2 py-1 rounded-md font-medium" style={{background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A"}}>Excel実務研修</span>
+                <span className="px-2 py-1 rounded-md font-medium" style={{background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A"}}>経理基礎研修</span>
+              </div>
+              <div className="mt-3 flex items-start gap-2">
+                <AlertCircle size={13} style={{color: MORPHY.red, marginTop: 1, flexShrink: 0}}/>
+                <p className="text-[11px] text-[#62625b]" style={{lineHeight: 1.7}}>スタッフが「Excel実務研修」と「経理基礎研修」を完了すると→「OAスキル」「経理実務」のアセスメントが受験可能に→合格すると認定スキルが付与→「経理事務」職種の案件に提案可能になります。</p>
+              </div>
+            </div>
+          </Section>
+
           <Section title="ダッシュボード" icon={<Home size={16} style={{color: MORPHY.plumBlack}}/>}>
             <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>ログイン後に表示されるトップ画面です。全スタッフ数、育成計画の進捗、就業率などのKPIを一覧できます。</p>
             <Step num="1" title="KPIカードで全体把握" desc="全スタッフ数・育成計画数・育成中人数・就業率の4つの指標をリアルタイムで確認。カードをクリックすると各詳細画面に遷移します。"/>
@@ -8435,7 +8606,7 @@ export default function App() {
           </Section>
 
           <Section title="マスタ管理" icon={<Layers size={16} style={{color: MORPHY.plumBlack}}/>}>
-            <Step num="1" title="職種マスタ" desc="「職種マスタ」で職種カテゴリを管理。各職種に必要なスキル・アセスメント基準を設定します。AIチャットで新しい職種の要件を対話的に設計することもできます。"/>
+            <Step num="1" title="職種マスタ" desc="「職種マスタ」で職種カテゴリを管理。各職種に必要なスキル・アセスメント基準を設定します。新しい職種の追加も可能です。"/>
             <Step num="2" title="スキルマスタ" desc="「スキルマスタ」で認定スキルを管理。各スキルに前提研修を紐づけることで、研修完了→アセスメント開放の自動フローが構築されます。"/>
             <Step num="3" title="研修マスタ" desc="「研修マスタ」で研修プログラムを管理。社内研修・外部資格講座・eラーニングを一元管理し、スケジュール・定員・コストを設定します。"/>
           </Section>
@@ -8444,70 +8615,146 @@ export default function App() {
 
       sales: (
         <div>
+          <Section title="営業の役割と業務フロー" icon={<Sparkles size={16} style={{color: MORPHY.red}}/>}>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>営業は「派遣先企業の募集」と「自社スタッフ」をマッチングする中心的な役割です。TalentFlowでは以下のサイクルで業務が回ります。</p>
+            <div className="p-4 rounded-xl mb-4" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+              <div className="flex items-center gap-2 flex-wrap text-xs">
+                {["顧客が募集を作成", "営業が候補者を提案", "顧客が面談リクエスト", "営業がメール回答", "面談・フィードバック", "就業開始"].map((s, i) => (
+                  <React.Fragment key={i}>{i > 0 && <ChevronRight size={12} className="text-[#c8c8c1]"/>}<span className="px-2.5 py-1.5 rounded-lg font-medium" style={{background: i < 2 ? `${MORPHY.red}10` : "#fff", color: i < 2 ? MORPHY.red : "#62625b", border: `1px solid ${i < 2 ? `${MORPHY.red}25` : MORPHY.cardBorder}`}}>{s}</span></React.Fragment>
+                ))}
+              </div>
+            </div>
+            <div className="p-3 rounded-lg text-xs" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+              <span className="font-semibold text-[#211922]">用語: </span>
+              <span className="text-[#91918c]"><b>募集</b> = 派遣先企業が出す人材要件（JD）。<b>スキルマッチ率</b> = スタッフのスキルと募集要件の一致度（自動計算）。<b>ブラインド</b> = 個人情報を伏せた状態で顧客に候補者を見せる仕組み。</span>
+            </div>
+          </Section>
+
           <Section title="ダッシュボード" icon={<Home size={16} style={{color: MORPHY.red}}/>}>
-            <Step num="1" title="アクティビティ一覧" desc="未対応の面談リクエスト・顧客が作成した募集・契約終了間近のスタッフが一目で分かります。赤いカードは緊急対応が必要な項目です。"/>
-            <Step num="2" title="募集一覧へのアクセス" desc="「募集一覧」から全ての募集を確認。ステータスフィルタで「対応中」「未対応リクエストあり」などで絞り込めます。"/>
+            <Step num="1" title="アクティビティ一覧" desc="ログイン後に表示されるダッシュボードです。「やることリスト」に未対応の面談リクエスト・顧客が作成した募集・契約終了間近・アセスメント結果待ちが優先度順にまとめて表示されます。赤い項目は緊急対応が必要です。"/>
+            <Step num="2" title="募集情報と就業状況" desc="「契約終了間近」と「直近の募集」が2カラムで並列表示されます。募集名をクリックすると詳細画面に遷移します。"/>
           </Section>
 
           <Section title="募集への候補者提案" icon={<List size={16} style={{color: MORPHY.red}}/>}>
-            <Step num="1" title="募集詳細を開く" desc="募集一覧から対象の募集をクリックして詳細画面を開きます。要件スキル・勤務条件・顧客情報が確認できます。"/>
-            <Step num="2" title="候補者を提案する" desc="「候補者タブ」で提案済み・顧客追加の候補者を管理。推薦コメントを入力して顧客にアピールできます。" tips="スキルマッチ率が自動計算されるので、高い候補者から順に提案すると効率的です。"/>
-            <Step num="3" title="アセスメント受験を依頼する" desc="候補者行の「アセスメント依頼」ボタンから期限を設定して依頼を送信。スタッフのダッシュボードとTodoリストに通知されます。" tips="「3日後」「7日後」「14日後」のクイック選択ボタンで素早く期限を設定できます。"/>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>候補者を提案する際、システムが自動計算する「スキルマッチ率」を活用します。これは募集に設定されたスキル要件と、スタッフの保有スキル・認定スキルを照合した一致度です。</p>
+            <Step num="1" title="募集詳細を開く" desc="募集一覧から対象の募集をクリック。要件スキル・勤務条件・顧客情報が確認できます。"/>
+            <Step num="2" title="候補者を提案する" desc="「候補者タブ」で提案済み・顧客追加の候補者を管理。推薦コメントを入力して顧客にアピールできます。" tips="スキルマッチ率が高い候補者から順に提案すると効率的です。"/>
+            <Step num="3" title="アセスメント受験を依頼する" desc="候補者のスキルを証明するため、「アセスメント依頼」ボタンから期限付きで受験を依頼できます。スタッフには通知・Todoリストで自動通知されます。" tips="「3日後」「7日後」「14日後」のクイック選択ボタンで素早く期限設定。"/>
           </Section>
 
           <Section title="面談リクエスト対応" icon={<MessageSquare size={16} style={{color: MORPHY.red}}/>}>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>面談リクエストは顧客が候補者に興味を持った際に発生します。営業はこのリクエストに対して候補者の詳細情報（レジュメ等）をメールで回答します。</p>
             <Step num="1" title="リクエストを確認する" desc="ダッシュボードの「未対応の面談リクエスト」カード、または募集詳細画面の面談リクエスト欄から確認します。"/>
-            <Step num="2" title="回答メールを送信する" desc="「回答メールを送信」ボタンでメール作成画面が開きます。候補者情報が自動で入力され、レジュメも添付可能です。"/>
+            <Step num="2" title="回答メールを送信する" desc="「回答メールを送信」ボタンで作成画面が開きます。候補者情報が自動入力され、レジュメ添付も可能です。"/>
           </Section>
 
           <Section title="スタッフ就業状況" icon={<Monitor size={16} style={{color: MORPHY.red}}/>}>
-            <Step num="1" title="就業状況の確認" desc="「スタッフ就業状況」で全スタッフの配属先・契約期間を一覧表示。契約終了が近いスタッフは色付きバッジで警告されます。"/>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>就業中スタッフの契約期間を管理し、契約終了に備えた次の提案準備を行います。</p>
+            <Step num="1" title="就業状況の確認" desc="「スタッフ就業状況」で全スタッフの配属先・契約期間を一覧表示。契約終了が近いスタッフは色付きバッジで警告されます。" tips="30日以内に契約終了するスタッフは赤、60日以内は黄色で表示されます。"/>
           </Section>
         </div>
       ),
 
       client: (
         <div>
+          <Section title="派遣先企業としてのTalentFlow活用" icon={<Sparkles size={16} style={{color: "#7C3AED"}}/>}>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>派遣先企業モードでは、人材の募集要件を作成し、候補者を閲覧・面談リクエストするまでの一連の流れを行います。</p>
+            <div className="p-4 rounded-xl mb-4" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+              <div className="text-xs font-bold text-[#211922] mb-3">候補者の見え方について</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-white" style={{border: `1px solid ${MORPHY.cardBorder}`}}>
+                  <div className="text-xs font-semibold text-[#211922] mb-1 flex items-center gap-1.5"><Lock size={11} style={{color: "#7C3AED"}}/>ブラインドモード</div>
+                  <p className="text-[11px] text-[#91918c]" style={{lineHeight: 1.7}}>候補者の氏名・写真は非表示。スキル・経験年数・資格・マッチ率のみ閲覧可能。公平な評価を実現します。</p>
+                </div>
+                <div className="p-3 rounded-lg bg-white" style={{border: `1px solid ${MORPHY.cardBorder}`}}>
+                  <div className="text-xs font-semibold text-[#211922] mb-1 flex items-center gap-1.5"><Eye size={11} style={{color: "#7C3AED"}}/>面談リクエスト後</div>
+                  <p className="text-[11px] text-[#91918c]" style={{lineHeight: 1.7}}>面談リクエストを営業が承認後、候補者の詳細情報（氏名・レジュメ等）が開示されます。</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-3 rounded-lg text-xs" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+              <span className="font-semibold text-[#211922]">用語: </span>
+              <span className="text-[#91918c]"><b>募集</b> = 必要な人材の要件定義。<b>マッチ率</b> = 候補者のスキルと募集要件の一致度。<b>面談リクエスト</b> = 気になる候補者への面談希望。営業経由で調整されます。</span>
+            </div>
+          </Section>
+
           <Section title="募集要件の作成" icon={<FileText size={16} style={{color: "#7C3AED"}}/>}>
-            <Step num="1" title="AIチャットで要件を整理" desc="トップ画面でAIチャットと対話しながら募集要件を作成します。「経理経験3年以上」「Excel上級」のように希望を伝えると、AIが最適なスキル要件を提案します。"/>
-            <Step num="2" title="候補者プレビュー" desc="要件を入力するとリアルタイムで該当候補者が表示されます。個人情報はマスキングされた状態（ブラインド）で、スキル・経験のみ確認できます。" tips="候補者のスキルタグが緑色の場合、要件にマッチしていることを示しています。"/>
-            <Step num="3" title="募集を保存する" desc="要件が固まったら「この内容で保存」ボタンで募集を保存。営業担当に自動通知されます。"/>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>AIチャットと対話しながら募集要件を作成できます。スキル名がわからなくても「経理ができる人」のように自然言語で伝えれば、AIが最適なスキル要件に変換します。</p>
+            <Step num="1" title="AIチャットで要件を整理" desc="トップ画面でAIと対話。「経理経験3年以上」「Excel上級」のように希望を伝えると、AIがスキル要件・候補者像を提案します。"/>
+            <Step num="2" title="候補者プレビュー" desc="要件入力中にリアルタイムで該当候補者が表示。ブラインドモードで表示されるため、スキルと経験に集中して評価できます。" tips="候補者のスキルタグが緑色なら要件にマッチしています。"/>
+            <Step num="3" title="募集を保存する" desc="「この内容で保存」ボタンで募集を保存。営業担当に自動通知され、候補者提案プロセスが開始されます。"/>
           </Section>
 
           <Section title="候補者の閲覧・検索" icon={<Search size={16} style={{color: "#7C3AED"}}/>}>
-            <Step num="1" title="スタッフ検索" desc="「スタッフ検索」タブでスキル・経験年数・勤務地等の条件でスタッフを検索できます。ブラインドモードで表示されるため、スキルと経験に集中して評価できます。"/>
-            <Step num="2" title="お気に入り登録" desc="気になる候補者はハートアイコンでお気に入りに保存。「お気に入り一覧」でまとめて確認できます。"/>
+            <Step num="1" title="スタッフ検索" desc="「スタッフ検索」タブでスキル・経験年数・勤務地等で検索。ブラインドモードのため、先入観なくスキルベースで評価できます。"/>
+            <Step num="2" title="お気に入り登録" desc="気になる候補者はハートアイコンでお気に入り保存。「お気に入り一覧」でまとめて比較検討できます。"/>
           </Section>
 
-          <Section title="面談リクエスト" icon={<MessageSquare size={16} style={{color: "#7C3AED"}}/>}>
-            <Step num="1" title="面談をリクエストする" desc="候補者カードまたは詳細画面から「面談リクエスト」ボタンを押すと、営業担当にリクエストが送信されます。"/>
-            <Step num="2" title="フィードバックを提供する" desc="面談後、営業から共有された候補者に対してフィードバック（採用希望・見送り・保留）を送ることができます。"/>
+          <Section title="面談リクエスト・フィードバック" icon={<MessageSquare size={16} style={{color: "#7C3AED"}}/>}>
+            <Step num="1" title="面談をリクエストする" desc="候補者カードの「面談リクエスト」ボタンで営業にリクエスト送信。営業が候補者の詳細情報をメールで回答します。"/>
+            <Step num="2" title="フィードバックを提供する" desc="面談後、「採用希望」「見送り」「保留」のフィードバックを送信できます。このフィードバックは営業画面に即座に反映されます。"/>
           </Section>
         </div>
       ),
 
       staff: (
         <div>
+          <Section title="スタッフとしての成長パス" icon={<Sparkles size={16} style={{color: "#15803D"}}/>}>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>TalentFlowでは、研修を受講してスキルを身につけ、アセスメントで認定を受けることで、より多くの案件にマッチングされるようになります。</p>
+            <div className="p-4 rounded-xl mb-4" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+              <div className="text-xs font-bold text-[#211922] mb-3">スキルアップの流れ</div>
+              <div className="flex items-center gap-2 flex-wrap text-xs">
+                {[
+                  { label: "研修受講", color: MORPHY.plumBlack },
+                  { label: "習得確認テスト", color: "#D97706" },
+                  { label: "スキルアセスメント", color: MORPHY.red },
+                  { label: "スキル認定取得", color: "#15803D" },
+                ].map((s, i) => (
+                  <React.Fragment key={i}>{i > 0 && <ChevronRight size={12} className="text-[#c8c8c1]"/>}<span className="px-2.5 py-1.5 rounded-lg font-medium text-white" style={{background: s.color}}>{s.label}</span></React.Fragment>
+                ))}
+              </div>
+              <div className="mt-3 flex items-start gap-2">
+                <AlertCircle size={13} style={{color: "#15803D", marginTop: 1, flexShrink: 0}}/>
+                <p className="text-[11px] text-[#62625b]" style={{lineHeight: 1.7}}>認定スキルが増えるほど、あなたにマッチする案件が増え、より良い就業機会に繋がります。</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-1">
+              <div className="p-3 rounded-lg" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+                <div className="text-xs font-semibold text-[#211922] mb-1">研修とは？</div>
+                <p className="text-[11px] text-[#91918c]" style={{lineHeight: 1.7}}>管理者が割り当てる学習プログラム。集合研修・eラーニング・外部資格講座などがあります。育成計画に組み込まれると自動的に通知されます。</p>
+              </div>
+              <div className="p-3 rounded-lg" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+                <div className="text-xs font-semibold text-[#211922] mb-1">アセスメントとは？</div>
+                <p className="text-[11px] text-[#91918c]" style={{lineHeight: 1.7}}>スキルの習熟度を測るオンライン試験。前提となる研修を全て完了すると受験可能になります。合格するとスキル認定が付与されます。</p>
+              </div>
+            </div>
+          </Section>
+
           <Section title="マイページ（ダッシュボード）" icon={<Home size={16} style={{color: "#15803D"}}/>}>
-            <Step num="1" title="やることリストを確認" desc="ログイン後、最初に表示されるのがマイページです。「やることリスト」に研修の確認テスト・アセスメント受験・受講中の研修が優先度順に表示されます。" tips="赤色の項目は期限が近い、または緊急の対応が必要なタスクです。"/>
-            <Step num="2" title="KPIカードで状況把握" desc="「アセスメント」「研修」「通知」の3つのカードで、受験可能なアセスメント数・研修の進捗・新着通知を一目で確認できます。"/>
-            <Step num="3" title="スキル・資格の確認" desc="認定職種・認定スキル・保有スキルがカードにまとめて表示されます。アセスメントに合格するとここに自動反映されます。"/>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>マイページはあなたの「今やるべきこと」を一目で把握するための画面です。やることリスト・研修状況・スキル一覧が集約されています。</p>
+            <Step num="1" title="やることリストを確認" desc="研修の確認テスト・アセスメント受験・受講中の研修が優先度順に表示されます。項目をクリックすると該当画面に直接遷移します。" tips="赤色の項目は期限が近い、または緊急対応が必要なタスクです。"/>
+            <Step num="2" title="キャリア成長のヒント" desc="やることリストの各項目には「この研修を完了すると→○○スキル認定→○○職種に前進」のようなキャリアパスの案内が表示されます。また、職種認定の条件を達成した場合やスキル取得が近い場合には、ダッシュボード上部に目立つバナーで通知されます。"/>
+            <Step num="3" title="KPIカードで状況把握" desc="「アセスメント」「研修」「通知」の3つのカードで、受験可能なアセスメント数・研修進捗・新着通知を確認できます。"/>
+            <Step num="4" title="スキル・資格の確認" desc="認定職種・認定スキル・保有スキルがまとめて表示されます。アセスメント合格で自動反映されます。"/>
           </Section>
 
           <Section title="研修の受講" icon={<BookOpen size={16} style={{color: "#15803D"}}/>}>
-            <Step num="1" title="研修一覧を確認" desc="「研修一覧」タブで割り当てられた研修の一覧を確認。「受講中」「確認テスト待ち」「未着手」「完了」のステータスで分類されています。"/>
-            <Step num="2" title="研修を進める" desc="受講中の研修はスライダーで進捗を更新できます。進捗が100%になると「確認テスト待ち」に自動移行します。"/>
-            <Step num="3" title="習得確認テストを受験する" desc="「確認テスト待ち」の研修に表示される「テストを受験」ボタンからオンラインテストを受験。3問出題され、70%以上で合格です。" tips="不合格の場合は何度でも再受験できます。合格すると研修が「完了」になります。"/>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>研修には4つのステータスがあります。「未着手」→「受講中」→「確認テスト待ち」→「完了」の順に進みます。進捗が100%になっても、習得確認テストに合格するまでは完了になりません。</p>
+            <Step num="1" title="研修一覧を確認" desc="「研修一覧」で割り当て済み研修をステータス別に確認。受講中・確認テスト待ち・未着手・完了で分類されています。"/>
+            <Step num="2" title="研修を進める" desc="受講中の研修はスライダーで進捗を更新。進捗100%で「確認テスト待ち」に自動移行します。"/>
+            <Step num="3" title="習得確認テストを受験する" desc="「テストを受験」ボタンからオンラインテスト。3問出題され、70%以上で合格→研修「完了」。" tips="不合格でも何度でも再受験可能。合格すると関連するアセスメントが受験可能になる場合があります。"/>
           </Section>
 
           <Section title="アセスメントの受験" icon={<Award size={16} style={{color: "#15803D"}}/>}>
-            <Step num="1" title="受験可能なアセスメントを確認" desc="「アセスメント」タブで受験可能なスキルアセスメントを確認。前提研修を全て完了すると自動的に「受験可能」になります。" tips="「前提未達」のアセスメントには、完了すべき研修名が表示されています。"/>
-            <Step num="2" title="アセスメントを受験する" desc="「受験する」ボタンからオンラインアセスメントを開始。設問に回答し、合格スコア以上で認定を取得できます。"/>
-            <Step num="3" title="スキル認定を取得" desc="合格するとスキル認定が自動的にプロフィールに反映され、該当スキルを要件とする案件への提案候補に加わります。"/>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>アセスメントは「前提研修を全て完了」すると自動的に受験可能になります。前提未達のアセスメントには、完了すべき研修名が表示されています。</p>
+            <Step num="1" title="受験可能なアセスメントを確認" desc="「アセスメント」タブで全スキルアセスメントの状態を確認。「受験可能」「前提未達」「合格済み」でフィルタできます。"/>
+            <Step num="2" title="アセスメントを受験する" desc="「受験する」ボタンで開始。設問に回答し、合格スコア以上でスキル認定を取得できます。"/>
+            <Step num="3" title="スキル認定を取得" desc="合格するとプロフィールに自動反映。該当スキルを要件とする案件への提案候補に即座に加わります。"/>
           </Section>
 
           <Section title="プロフィール管理" icon={<User size={16} style={{color: "#15803D"}}/>}>
-            <Step num="1" title="プロフィールを編集する" desc="マイページのプロフィール欄をクリックするとプロフィール画面に遷移。「編集する」ボタンで各項目を更新できます。" tips="スキルレベルの変更、資格の追加、希望条件の更新はここから行えます。"/>
+            <p className="text-xs text-[#62625b] mb-4" style={{lineHeight: 1.8}}>プロフィールは営業が候補者として提案する際の基本情報です。スキルレベル・資格・希望条件を常に最新にしておくことで、より正確なマッチングが実現します。</p>
+            <Step num="1" title="プロフィールを編集する" desc="マイページのプロフィール欄をクリック→「編集する」ボタンで更新。スキルレベル変更・資格追加・希望条件更新が可能です。" tips="保存すると営業・管理者画面にも即座に反映されます。"/>
           </Section>
         </div>
       ),
@@ -8623,6 +8870,7 @@ export default function App() {
               { icon: <BarChart3 size={22} className="text-white"/>, color: MORPHY.red, title: "スキルの完全可視化", desc: "全スタッフのスキル・資格・研修履歴をデータベース化。定量的なスキルマッチングで、経験や勘に頼らない人材提案を実現します。", reverse: false },
               { icon: <GraduationCap size={22} className="text-white"/>, color: "#D97706", title: "育成の自動化・計画化", desc: "研修受講→習得確認テスト→スキル認定のフローをシステム管理。育成計画のPDCAを自動で回し、進捗をリアルタイム共有。", reverse: true },
               { icon: <Sparkles size={22} className="text-white"/>, color: "#7C3AED", title: "AI活用の次世代マッチング", desc: "AIがスキルデータに基づく候補者提案を自動実行。派遣先企業はAIチャットで募集要件を対話的に整理できます。", reverse: false },
+              { icon: <Users size={22} className="text-white"/>, color: "#15803D", title: "キャリアパスの可視化", desc: "スタッフのダッシュボードでは「この研修を完了すると→どのスキルが取れて→どの職種に近づくか」を自動表示。成長の道筋が常に見える化されます。", reverse: true },
             ].map((v, i) => (
               <div key={i} className="flex items-center gap-8" style={{flexDirection: v.reverse ? "row-reverse" : "row"}}>
                 <div className="flex-shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center" style={{background: v.color}}>{v.icon}</div>
@@ -8676,7 +8924,7 @@ export default function App() {
               { role: "派遣先企業", color: "#7C3AED", icon: <Building2 size={16} className="text-white"/>,
                 features: ["AIチャットによる募集要件作成", "候補者のブラインド閲覧・検索", "面談リクエスト", "フィードバックの提供"] },
               { role: "スタッフ", color: "#15803D", icon: <User size={16} className="text-white"/>,
-                features: ["やることリスト（自動集約）", "研修受講・習得確認テスト", "スキルアセスメント受験", "プロフィール・スキル管理"] },
+                features: ["やることリスト、研修受講・習得確認テスト、スキルアセスメント受験、キャリアパス案内"] },
             ].map((r, i) => (
               <div key={i} className="p-5 rounded-xl" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
                 <div className="flex items-center gap-3 mb-3">
@@ -8700,13 +8948,13 @@ export default function App() {
               <SectionLabel text="SECURITY"/>
               <h2 className="text-xl font-bold text-[#211922] mb-3" style={{lineHeight: 1.4}}>セキュリティ<br/>アーキテクチャ</h2>
               <p className="text-lg font-bold mb-3" style={{color: MORPHY.red, lineHeight: 1.5}}>AIエンジンに<br/>個人情報は一切<br/>到達しません。</p>
-              <p className="text-xs text-[#91918c]" style={{lineHeight: 1.9}}>NECとの協業により、エンタープライズ水準のセキュリティ基盤で運用しています。</p>
+              <p className="text-xs text-[#91918c]" style={{lineHeight: 1.9}}>エンタープライズ水準のセキュリティ基盤で運用しています。</p>
             </div>
             <div className="flex-1 space-y-3">
               {[
                 { icon: <Shield size={16} style={{color: MORPHY.red}}/>, title: "個人情報マスキング", desc: "データ取込時に氏名・社員番号等を自動マスキング。AIプロンプトに個人情報は含まれません。" },
                 { icon: <Lock size={16} style={{color: MORPHY.red}}/>, title: "組織権限連動フィルタ", desc: "操作者の所属・権限に基づき、AIへのインプットと参照範囲を自動フィルタリング。" },
-                { icon: <Building2 size={16} style={{color: MORPHY.red}}/>, title: "NECエンタープライズ基盤", desc: "大企業のセキュリティ要件を満たすインフラ基盤。調達審査・情シス審査にも対応。" },
+                { icon: <Building2 size={16} style={{color: MORPHY.red}}/>, title: "エンタープライズ基盤", desc: "大企業のセキュリティ要件を満たすインフラ基盤。調達審査・情シス審査にも対応。" },
               ].map((s, i) => (
                 <div key={i} className="bg-white p-4 rounded-xl flex gap-3" style={{border: `1px solid ${MORPHY.cardBorder}`}}>
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{background: `${MORPHY.red}08`}}>{s.icon}</div>
@@ -8763,12 +9011,9 @@ export default function App() {
       case "jd-create": return <JDCreateScreen/>;
       case "jd-detail": return <JDDetailScreen/>;
       case "jd-list": return <JDListScreen/>;
-      case "candidate-list": return <CandidateListScreen/>;
-      case "favorites": return <FavoritesListScreen/>;
       case "candidate-detail": return <CandidateDetailScreen/>;
       // Sales
       case "sales-dashboard": return <SalesDashboardScreen/>;
-      case "available-candidates": return <AvailableCandidatesScreen/>;
       case "assignment-list": return <AssignmentListScreen/>;
       case "sales-jd-list": return <SalesJDListScreen/>;
       case "sales-jd-detail": return <SalesJDDetailScreen/>;
@@ -8783,10 +9028,9 @@ export default function App() {
       case "job-category-detail": return <JobCategoryDetailScreen/>;
       case "skill-master": return <SkillMasterScreen/>;
       case "skill-master-detail": return <SkillMasterDetailScreen/>;
-      case "assessment-gen": return <AssessmentGenScreen/>;
-      case "training": return <TrainingScreen/>;
       case "training-detail": return <TrainingDetailScreen/>;
       case "training-master": return <TrainingMasterScreen/>;
+      case "cert-holders": return <CertHoldersScreen/>;
       case "admin-resume": return <AdminResumeScreen/>;
       // Candidate (new)
       case "candidate-dashboard": return <CandidateDashboardScreen/>;
