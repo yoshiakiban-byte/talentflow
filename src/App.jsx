@@ -1296,9 +1296,6 @@ export default function App() {
           <button onClick={() => handleNavClick("guide")} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-all duration-200" style={{borderRadius: MORPHY.radius.md, background: screen === "guide" ? "rgba(255,255,255,0.1)" : "transparent", color: screen === "guide" ? "#fff" : "rgba(255,255,255,0.45)", fontWeight: 400}}>
             <BookOpen size={18}/><span>利用ガイド</span>
           </button>
-          <button onClick={() => handleNavClick("about")} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-all duration-200" style={{borderRadius: MORPHY.radius.md, background: screen === "about" ? "rgba(255,255,255,0.1)" : "transparent", color: screen === "about" ? "#fff" : "rgba(255,255,255,0.45)", fontWeight: 400}}>
-            <Sparkles size={18}/><span>本サービスについて</span>
-          </button>
         </div>
       </>
     );
@@ -8786,19 +8783,15 @@ export default function App() {
         {/* Guide content */}
         {guideContent[activeRole]}
 
-        {/* Bottom navigation */}
-        <div className="flex items-center justify-between p-4 rounded-xl" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+        {/* Bottom note */}
+        <div className="p-4 rounded-xl" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
           <div className="text-xs text-[#91918c]">ご不明な点がございましたら、管理者にお問い合わせください。</div>
-          <button onClick={() => navigate("about")} className="text-xs font-medium flex items-center gap-1" style={{color: MORPHY.red}}>本サービスについて <ChevronRight size={12}/></button>
         </div>
       </div>
     );
   };
 
-  // ============================================================
-  // ABOUT SCREEN — 本サービスについて
-  // ============================================================
-  const AboutScreen = () => {
+  const _aboutScreenRemoved = () => {
     const W = ({ children, bg, py = 80 }) => <div style={{background: bg, padding: `${py}px 0`}}><div style={{maxWidth: 840, margin: "0 auto", padding: "0 32px"}}>{children}</div></div>;
     const SectionLabel = ({ text, color }) => <div className="text-xs font-semibold tracking-wider mb-3" style={{color: color || MORPHY.red}}>{text}</div>;
 
@@ -8909,29 +8902,121 @@ export default function App() {
           </div>
         </W>
 
-        {/* ═══════ 4 ROLES ═══════ */}
+        {/* ═══════ 4 ROLES — 相関関係図 ═══════ */}
         <W bg="#fff" py={72}>
           <div className="text-center mb-10">
             <SectionLabel text="4 ROLES"/>
-            <h2 className="text-2xl font-bold text-[#211922]" style={{letterSpacing: "-0.5px"}}>すべてのステークホルダーを繋ぐ</h2>
+            <h2 className="text-2xl font-bold text-[#211922] mb-3" style={{letterSpacing: "-0.5px"}}>4つのロールが連携する仕組み</h2>
+            <p className="text-sm text-[#91918c] mx-auto" style={{maxWidth: 520, lineHeight: 1.8}}>管理者が育成基盤を整備し、営業が派遣先企業とスタッフを最適にマッチング。全員が同一プラットフォーム上でリアルタイムに連携します。</p>
           </div>
+
+          {/* Relationship diagram */}
+          <div className="p-6 rounded-2xl mb-8" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+            <div className="text-xs font-semibold text-[#211922] mb-4 text-center">ロール間の情報フロー</div>
+            {/* Row 1: 管理者 → 営業/スタッフ */}
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white" style={{border: `2px solid ${MORPHY.plumBlack}`}}>
+                <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{background: MORPHY.plumBlack}}><Settings size={13} className="text-white"/></div>
+                <span className="text-xs font-bold text-[#211922]">管理者</span>
+              </div>
+            </div>
+            <div className="flex justify-center gap-16 mb-2">
+              <div className="text-center">
+                <div className="text-[10px] text-[#91918c] mb-1">育成計画・研修指示</div>
+                <div style={{width: 1, height: 16, background: MORPHY.cardBorder, margin: "0 auto"}}/>
+                <div className="text-[10px]" style={{color: MORPHY.plumBlack}}>▼</div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-[#91918c] mb-1">スキル・職種マスタ</div>
+                <div style={{width: 1, height: 16, background: MORPHY.cardBorder, margin: "0 auto"}}/>
+                <div className="text-[10px]" style={{color: MORPHY.plumBlack}}>▼</div>
+              </div>
+            </div>
+
+            {/* Row 2: 営業 ↔ 派遣先企業, 営業 ↔ スタッフ */}
+            <div className="flex items-center justify-center gap-6 mb-4">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white" style={{border: `2px solid ${MORPHY.red}`}}>
+                <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{background: MORPHY.red}}><Briefcase size={13} className="text-white"/></div>
+                <span className="text-xs font-bold text-[#211922]">営業</span>
+              </div>
+              <div className="flex flex-col items-center gap-0.5">
+                <div className="flex items-center gap-1"><span className="text-[10px] text-[#91918c]">候補者提案</span><span style={{color: MORPHY.red}}>→</span></div>
+                <div className="flex items-center gap-1"><span style={{color: "#7C3AED"}}>←</span><span className="text-[10px] text-[#91918c]">面談リクエスト</span></div>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white" style={{border: "2px solid #7C3AED"}}>
+                <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{background: "#7C3AED"}}><Building2 size={13} className="text-white"/></div>
+                <span className="text-xs font-bold text-[#211922]">派遣先企業</span>
+              </div>
+            </div>
+
+            <div className="flex justify-center mb-4">
+              <div className="flex items-center gap-1">
+                <div className="flex flex-col items-center">
+                  <div className="text-[10px]" style={{color: MORPHY.red}}>▼</div>
+                  <div className="text-[10px] text-[#91918c]">受験依頼</div>
+                </div>
+                <div className="mx-4"/>
+                <div className="flex flex-col items-center">
+                  <div className="text-[10px]" style={{color: "#15803D"}}>▲</div>
+                  <div className="text-[10px] text-[#91918c]">スキル認定</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Row 3: スタッフ */}
+            <div className="flex items-center justify-center">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white" style={{border: "2px solid #15803D"}}>
+                <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{background: "#15803D"}}><User size={13} className="text-white"/></div>
+                <span className="text-xs font-bold text-[#211922]">スタッフ</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Interaction flows */}
+          <div className="space-y-4 mb-8">
+            <div className="text-xs font-semibold text-[#211922] mb-2">主要な連携フロー</div>
+            {[
+              { from: "管理者", fromColor: MORPHY.plumBlack, to: "スタッフ", toColor: "#15803D", flow: "育成計画にスタッフを組み込む → 研修受講指示が自動通知 → スタッフのTodoリストに反映", icon: <Target size={13}/> },
+              { from: "派遣先企業", fromColor: "#7C3AED", to: "営業", toColor: MORPHY.red, flow: "AIチャットで募集を作成 → 営業ダッシュボードに通知 → スキルマッチで候補者を提案", icon: <FileText size={13}/> },
+              { from: "営業", fromColor: MORPHY.red, to: "スタッフ", toColor: "#15803D", flow: "アセスメント受験を期限付きで依頼 → スタッフに通知 → 合格でスキル認定 → 提案候補に", icon: <ClipboardList size={13}/> },
+              { from: "派遣先企業", fromColor: "#7C3AED", to: "営業", toColor: MORPHY.red, flow: "候補者に面談リクエスト → 営業がレジュメ付きで回答 → 面談実施 → フィードバック", icon: <MessageSquare size={13}/> },
+              { from: "管理者", fromColor: MORPHY.plumBlack, to: "営業", toColor: MORPHY.red, flow: "職種・スキルマスタを整備 → 営業の検索・マッチング精度が向上 → 提案スピード改善", icon: <Layers size={13}/> },
+            ].map((f, i) => (
+              <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{background: "#fff", border: `1px solid ${MORPHY.cardBorder}`}}>{React.cloneElement(f.icon, { style: { color: f.fromColor } })}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded text-white" style={{background: f.fromColor}}>{f.from}</span>
+                    <ChevronRight size={11} className="text-[#c8c8c1]"/>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded text-white" style={{background: f.toColor}}>{f.to}</span>
+                  </div>
+                  <p className="text-xs text-[#62625b]" style={{lineHeight: 1.7}}>{f.flow}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Role cards */}
           <div className="grid grid-cols-2 tf-grid-2 gap-4">
             {[
-              { role: "管理者", color: MORPHY.plumBlack, icon: <Settings size={16} className="text-white"/>,
-                features: ["育成計画の策定・進捗管理", "スキル・職種マスタの一元管理", "研修マスタ管理", "就業状況のモニタリング"] },
-              { role: "営業", color: MORPHY.red, icon: <Briefcase size={16} className="text-white"/>,
-                features: ["スキルマッチによる候補者提案", "期限付きアセスメント受験依頼", "面談リクエストへのメール回答", "スタッフ就業状況・契約管理"] },
-              { role: "派遣先企業", color: "#7C3AED", icon: <Building2 size={16} className="text-white"/>,
-                features: ["AIチャットによる募集要件作成", "候補者のブラインド閲覧・検索", "面談リクエスト", "フィードバックの提供"] },
-              { role: "スタッフ", color: "#15803D", icon: <User size={16} className="text-white"/>,
-                features: ["やることリスト、研修受講・習得確認テスト、スキルアセスメント受験、キャリアパス案内"] },
+              { role: "管理者", sub: "全体の仕組みを作る人", color: MORPHY.plumBlack, icon: <Settings size={16} className="text-white"/>,
+                features: ["育成計画の策定・メンバー組込み", "スキル・職種・研修マスタの管理", "就業状況のモニタリング"] },
+              { role: "営業", sub: "企業とスタッフを繋ぐ人", color: MORPHY.red, icon: <Briefcase size={16} className="text-white"/>,
+                features: ["スキルマッチによる候補者提案", "アセスメント受験依頼（期限付き）", "面談リクエスト対応・契約管理"] },
+              { role: "派遣先企業", sub: "人材を求める側", color: "#7C3AED", icon: <Building2 size={16} className="text-white"/>,
+                features: ["AIチャットで募集要件を作成", "ブラインドで候補者を閲覧", "面談リクエスト・フィードバック"] },
+              { role: "スタッフ", sub: "スキルアップして活躍する人", color: "#15803D", icon: <User size={16} className="text-white"/>,
+                features: ["研修受講・習得確認テスト", "スキルアセスメント受験・認定取得", "キャリアパス案内・Todo管理"] },
             ].map((r, i) => (
               <div key={i} className="p-5 rounded-xl" style={{background: MORPHY.warmWash, border: `1px solid ${MORPHY.cardBorder}`}}>
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-3 mb-1">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{background: r.color}}>{r.icon}</div>
-                  <div className="text-sm font-bold text-[#211922]">{r.role}</div>
+                  <div>
+                    <div className="text-sm font-bold text-[#211922]">{r.role}</div>
+                    <div className="text-[10px] text-[#91918c]">{r.sub}</div>
+                  </div>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 mt-3">
                   {r.features.map((f, fi) => (
                     <div key={fi} className="flex items-center gap-2"><CheckCircle size={11} style={{color: r.color}}/><span className="text-xs text-[#62625b]">{f}</span></div>
                   ))}
@@ -9044,7 +9129,6 @@ export default function App() {
       case "candidate-assessment-take": return <CandidateAssessmentTakeScreen/>;
       // Guide & About
       case "guide": return <GuideScreen/>;
-      case "about": return <AboutScreen/>;
       default: return role === "sales" ? <SalesDashboardScreen/> : role === "candidate" ? <CandidateDashboardScreen/> : role === "customer" ? <JDCreateScreen/> : <DashboardScreen/>;
     }
   };
@@ -9181,8 +9265,8 @@ export default function App() {
             </div>
 
             <div className="text-center mt-6">
-              <button onClick={() => { setIsLoggedIn(true); setRole("admin"); setScreen("about"); }} className="text-xs font-medium hover:underline transition-colors" style={{color: MORPHY.red}}>
-                <Sparkles size={12} className="inline mr-1" style={{verticalAlign: "-1px"}}/>本サービスについて
+              <button onClick={() => { setIsLoggedIn(true); setRole("admin"); setScreen("guide"); }} className="text-xs font-medium hover:underline transition-colors" style={{color: MORPHY.plumBlack}}>
+                <BookOpen size={12} className="inline mr-1" style={{verticalAlign: "-1px"}}/>利用ガイド
               </button>
             </div>
             <p className="text-center text-xs mt-3" style={{color: MORPHY.textMuted}}>© 2026 TalentFlow Inc. All rights reserved.</p>
